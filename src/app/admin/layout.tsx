@@ -5,6 +5,7 @@ import { requirePapel } from "@/lib/auth";
 const ABAS = [
   { href: "/admin/setores", rotulo: "Setores" },
   { href: "/admin/usuarios", rotulo: "Usuarios" },
+  { href: "/admin/templates", rotulo: "Templates" },
 ];
 
 export default async function AdminLayout({

@@ -15,12 +15,18 @@ Next.js (App Router) + Supabase (Postgres, Auth).
 
 Requer `SUPABASE_SERVICE_ROLE_KEY` no `.env.local` (usada apenas em server actions).
 
+## Fase 3 (implementada)
+
+- Tabelas `checklist_templates` e `checklist_items` (`TPL-0001`, `ITM-0001`)
+- `/admin/templates`: CRUD de templates por setor
+- `/admin/templates/[id]`: CRUD de itens do template com campo `ordem`
+
 ## Setup
 
 1. `npm install`
 2. Criar projeto no Supabase, copiar `.env.example` para `.env.local` e preencher
    `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-3. Rodar `supabase/migrations/0001_fase1_setores_users.sql` no SQL Editor.
+3. Rodar os arquivos de `supabase/migrations/` em ordem no SQL Editor.
 4. Criar o usuario admin em Authentication > Users e rodar `supabase/seed.sql`
    substituindo `<AUTH_USER_ID>` e `<EMAIL>`.
 5. `npm run dev`

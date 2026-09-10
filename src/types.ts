@@ -22,3 +22,20 @@ export const HOME_POR_PAPEL: Record<Papel, string> = {
   coordenador: "/coordenador",
   lider: "/lider",
 };
+
+export type ChecklistTemplate = {
+  id: string;
+  codigo: string;
+  setor_id: string;
+  nome: string;
+  created_at: string;
+};
+
+export type ChecklistItem = {
+  id: string;
+  codigo: string;
+  template_id: string;
+  descricao: string;
+  ordem: number;
+  created_at: string;
+};
