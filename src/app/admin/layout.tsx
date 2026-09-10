@@ -6,6 +6,7 @@ const ABAS = [
   { href: "/admin/setores", rotulo: "Setores" },
   { href: "/admin/usuarios", rotulo: "Usuarios" },
   { href: "/admin/templates", rotulo: "Templates" },
+  { href: "/dashboard", rotulo: "Dashboard" },
 ];
 
 export default async function AdminLayout({

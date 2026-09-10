@@ -47,6 +47,12 @@ Requer `SUPABASE_SERVICE_ROLE_KEY` no `.env.local` (usada apenas em server actio
 - `/lider/avaliacao`: concluir (grava `concluido_em`/`concluido_por`) ou resetar
   (volta para `aberta`, limpa prazo, `reset_count + 1`)
 
+## Fase 8 (implementada)
+
+- `/dashboard` (coordenador e admin): acoes por status e setor, vencidas (contagem e
+  lista), acoes com `reset_count > 0` e tempo medio entre abertura e conclusao por setor
+- Coordenador ve apenas o proprio setor (RLS); admin ve todos
+
 ## Setup
 
 1. `npm install`
@@ -63,6 +69,10 @@ Requer `SUPABASE_SERVICE_ROLE_KEY` no `.env.local` (usada apenas em server actio
 |---|---|
 | `/login` | publica |
 | `/` | redireciona pelo papel |
-| `/admin` | admin |
+| `/admin/setores` | admin |
+| `/admin/usuarios` | admin |
+| `/admin/templates` e `/admin/templates/[id]` | admin |
+| `/lider` e `/lider/checklists/[id]` | lider |
+| `/lider/avaliacao` | lider |
 | `/coordenador` | coordenador |
-| `/lider` | lider |
+| `/dashboard` | coordenador e admin |
