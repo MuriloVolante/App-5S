@@ -21,6 +21,14 @@ Requer `SUPABASE_SERVICE_ROLE_KEY` no `.env.local` (usada apenas em server actio
 - `/admin/templates`: CRUD de templates por setor
 - `/admin/templates/[id]`: CRUD de itens do template com campo `ordem`
 
+## Fase 4 (implementada)
+
+- Tabelas `checklists` (`CHK-0001`) e `checklist_respostas`
+- `/lider`: templates do setor, criacao de checklist e lista dos proprios checklists
+- `/lider/checklists/[id]`: toggle conforme/nao conforme, modal obrigatorio
+  (descricao + foto) e finalizacao
+- Fotos no bucket `checklist-fotos` do Supabase Storage
+
 ## Setup
 
 1. `npm install`

@@ -39,3 +39,26 @@ export type ChecklistItem = {
   ordem: number;
   created_at: string;
 };
+
+export type StatusChecklist = "aberto" | "finalizado";
+
+export type Checklist = {
+  id: string;
+  codigo: string;
+  setor_id: string;
+  lider_id: string;
+  template_id: string;
+  data_criacao: string;
+  status: StatusChecklist;
+  finalizado_em: string | null;
+};
+
+export type ChecklistResposta = {
+  id: string;
+  checklist_id: string;
+  item_id: string;
+  conforme: boolean;
+  observacao: string | null;
+  foto_url: string | null;
+  created_at: string;
+};
