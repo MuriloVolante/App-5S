@@ -62,3 +62,21 @@ export type ChecklistResposta = {
   foto_url: string | null;
   created_at: string;
 };
+
+export type StatusAcao = "aberta" | "com_prazo" | "vencida" | "concluida";
+
+export type Acao = {
+  id: string;
+  codigo: string;
+  resposta_id: string;
+  setor_id: string;
+  descricao_problema: string;
+  foto_url: string;
+  aberto_por: string;
+  aberto_em: string;
+  prazo: string | null;
+  status: StatusAcao;
+  reset_count: number;
+  concluido_em: string | null;
+  concluido_por: string | null;
+};

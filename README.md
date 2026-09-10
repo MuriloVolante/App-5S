@@ -29,6 +29,12 @@ Requer `SUPABASE_SERVICE_ROLE_KEY` no `.env.local` (usada apenas em server actio
   (descricao + foto) e finalizacao
 - Fotos no bucket `checklist-fotos` do Supabase Storage
 
+## Fase 5 (implementada)
+
+- Tabela `acoes` (`ACA-0001`)
+- Trigger `checklists_gerar_acoes`: ao finalizar checklist, cria uma acao com status
+  `aberta` para cada resposta `conforme = false`
+
 ## Setup
 
 1. `npm install`
