@@ -40,6 +40,13 @@ Requer `SUPABASE_SERVICE_ROLE_KEY` no `.env.local` (usada apenas em server actio
 - `/coordenador`: lista de acoes do setor com codigo, problema, status, prazo e resets
 - Acao `aberta` recebe prazo (data manual) e passa para `com_prazo`
 
+## Fase 7 (implementada)
+
+- `aplicar_vencimentos()`: acao `com_prazo` com `prazo < hoje` vira `vencida`
+  (executada ao abrir as telas de acoes, sem input manual)
+- `/lider/avaliacao`: concluir (grava `concluido_em`/`concluido_por`) ou resetar
+  (volta para `aberta`, limpa prazo, `reset_count + 1`)
+
 ## Setup
 
 1. `npm install`

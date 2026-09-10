@@ -32,6 +32,15 @@ export default async function LiderPage() {
     <>
       <Header usuario={usuario} />
       <main className="flex flex-col gap-8 p-6">
+        <div>
+          <Link
+            href="/lider/avaliacao"
+            className="text-sm text-neutral-600 underline"
+          >
+            Avaliacao de acoes vencidas
+          </Link>
+        </div>
+
         <section className="flex flex-col gap-3">
           <h1 className="text-lg font-semibold">Templates do meu setor</h1>
           {templates.length === 0 && (
