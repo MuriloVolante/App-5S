@@ -8,6 +8,13 @@ Next.js (App Router) + Supabase (Postgres, Auth).
 - Schema: `setores`, `users` com `codigo` sequencial (`SET-0001`, `USR-0001`)
 - Login email/senha com redirecionamento por papel (`admin`, `coordenador`, `lider`)
 
+## Fase 2 (implementada)
+
+- `/admin/setores`: CRUD de setores
+- `/admin/usuarios`: CRUD de usuarios (cria no Supabase Auth + perfil, papel e setor vinculado)
+
+Requer `SUPABASE_SERVICE_ROLE_KEY` no `.env.local` (usada apenas em server actions).
+
 ## Setup
 
 1. `npm install`
