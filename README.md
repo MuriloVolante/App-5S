@@ -35,6 +35,11 @@ Requer `SUPABASE_SERVICE_ROLE_KEY` no `.env.local` (usada apenas em server actio
 - Trigger `checklists_gerar_acoes`: ao finalizar checklist, cria uma acao com status
   `aberta` para cada resposta `conforme = false`
 
+## Fase 6 (implementada)
+
+- `/coordenador`: lista de acoes do setor com codigo, problema, status, prazo e resets
+- Acao `aberta` recebe prazo (data manual) e passa para `com_prazo`
+
 ## Setup
 
 1. `npm install`
