@@ -6,6 +6,9 @@ líder concluir ou resetar.
 
 ## Rodar (dois comandos, sem configurar nada)
 
+Requisito: Node.js 22.5 ou superior (Node 24 recomendado). Nada além disso — sem banco
+para instalar, sem compilador, sem variável de ambiente.
+
 ```bash
 npm install
 npm run dev
@@ -60,7 +63,7 @@ Todas as entidades têm código sequencial legível — `SET-0001`, `USR-0001`, 
 ## Stack
 
 - Next.js 16 (App Router) + React 19 + TypeScript
-- SQLite via `better-sqlite3` (arquivo local, sem servidor de banco)
+- SQLite pelo módulo nativo do Node (`node:sqlite`) — arquivo local, sem dependência nativa para compilar
 - Autenticação própria: senha com `scrypt`, sessão em cookie httpOnly
 - Fotos gravadas em `data/uploads` e servidas por `/api/fotos/...`
 
@@ -87,3 +90,5 @@ src/app/...        telas por papel
   persistente. **Não funcionam em Vercel/serverless**, onde o disco é efêmero — lá é
   preciso trocar por um banco gerenciado (Postgres/Supabase) e storage de objetos.
 - Sessões não expiram sozinhas; o logout remove a sessão.
+- No Node 22 o `node:sqlite` emite um aviso de recurso experimental no console; no Node 24
+  o módulo é estável e o aviso não aparece.

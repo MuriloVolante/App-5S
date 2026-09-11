@@ -1,26 +1,26 @@
 import fs from "node:fs";
 import path from "node:path";
-import Database from "better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
 import { gerarHash } from "@/lib/senha";
 
 const ARQUIVO =
   process.env.DATABASE_FILE ?? path.join(process.cwd(), "data", "app.db");
 
 declare global {
-  var __db: Database.Database | undefined;
+  var __db: DatabaseSync | undefined;
 }
 
 function abrir() {
   fs.mkdirSync(path.dirname(ARQUIVO), { recursive: true });
-  const db = new Database(ARQUIVO);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
+  const db = new DatabaseSync(ARQUIVO);
+  db.exec("pragma journal_mode = WAL");
+  db.exec("pragma foreign_keys = ON");
   criarSchema(db);
   semearDemo(db);
   return db;
 }
 
-function criarSchema(db: Database.Database) {
+function criarSchema(db: DatabaseSync) {
   db.exec(`
     create table if not exists sequencias (
       nome text primary key,
@@ -108,7 +108,7 @@ function criarSchema(db: Database.Database) {
   `);
 }
 
-function semearDemo(db: Database.Database) {
+function semearDemo(db: DatabaseSync) {
   if (process.env.SEM_DEMO === "1") return;
 
   const { total } = db.prepare("select count(*) as total from users").get() as {
@@ -217,9 +217,40 @@ function semearDemo(db: Database.Database) {
   );
 }
 
+type Parametro = string | number | bigint | null | Uint8Array;
+type ParametrosNomeados = Record<string, Parametro>;
+type Parametros = Parametro[] | [ParametrosNomeados];
+
+// node:sqlite devolve linhas com prototipo nulo; o React nao serializa esses
+// objetos para Client Components, entao cada linha e copiada para objeto comum.
+function copiar<T>(linha: unknown): T {
+  return { ...(linha as object) } as T;
+}
+
+function envolver(db: DatabaseSync) {
+  return {
+    exec: (sql: string) => db.exec(sql),
+    prepare: (sql: string) => {
+      const declaracao = db.prepare(sql);
+      return {
+        get: <T>(...parametros: Parametros): T | undefined => {
+          const linha = declaracao.get(...(parametros as Parametro[]));
+          return linha === undefined ? undefined : copiar<T>(linha);
+        },
+        all: <T>(...parametros: Parametros): T[] =>
+          declaracao
+            .all(...(parametros as Parametro[]))
+            .map((linha) => copiar<T>(linha)),
+        run: (...parametros: Parametros) =>
+          declaracao.run(...(parametros as Parametro[])),
+      };
+    },
+  };
+}
+
 export function conectar() {
   if (!globalThis.__db) globalThis.__db = abrir();
-  return globalThis.__db;
+  return envolver(globalThis.__db);
 }
 
 export function agora() {

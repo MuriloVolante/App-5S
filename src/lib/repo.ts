@@ -295,14 +295,16 @@ export function finalizarChecklist(checklistId: string) {
   if (respostas.length < itens.length)
     return "Responda todos os itens antes de finalizar.";
 
-  const gerar = conectar().transaction(() => {
-    conectar().prepare(
+  const db = conectar();
+  db.exec("begin");
+  try {
+    db.prepare(
       "update checklists set status = 'finalizado', finalizado_em = ? where id = ?"
     ).run(agora(), checklistId);
 
     const naoConformes = respostas.filter((resposta) => !resposta.conforme);
     for (const resposta of naoConformes) {
-      conectar().prepare(
+      db.prepare(
         `insert into acoes (id, codigo, resposta_id, setor_id, descricao_problema, foto_url, aberto_por, aberto_em, status, reset_count)
          values (?, ?, ?, ?, ?, ?, ?, ?, 'aberta', 0)`
       ).run(
@@ -316,9 +318,12 @@ export function finalizarChecklist(checklistId: string) {
         agora()
       );
     }
-  });
+    db.exec("commit");
+  } catch (erro) {
+    db.exec("rollback");
+    throw erro;
+  }
 
-  gerar();
   return null;
 }
 
