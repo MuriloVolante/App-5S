@@ -9,7 +9,7 @@ export async function criarChecklist(
   _prev: EstadoAcao,
   formData: FormData
 ): Promise<EstadoAcao> {
-  const usuario = await requirePapel(["lider"]);
+  const usuario = await requirePapel(["embaixador"]);
   const templateId = String(formData.get("template_id") ?? "");
   if (!templateId) return { erro: "Template inválido." };
 
@@ -17,6 +17,6 @@ export async function criarChecklist(
   if (!template || template.setor_id !== usuario.setor_id)
     return { erro: "Template fora do seu setor." };
 
-  const id = repo.criarChecklist(template.id, template.setor_id, usuario.id);
-  redirect(`/lider/checklists/${id}`);
+  repo.criarChecklist(template.id, template.setor_id, usuario.id);
+  redirect("/embaixador");
 }

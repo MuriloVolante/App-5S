@@ -11,7 +11,7 @@ const STATUS: StatusAcao[] = ["aberta", "com_prazo", "vencida", "concluida"];
 const DIA_MS = 1000 * 60 * 60 * 24;
 
 export default async function DashboardPage() {
-  const usuario = await requirePapel(["coordenador", "admin"]);
+  const usuario = await requirePapel(["embaixador", "admin"]);
   const escopo = usuario.papel === "admin" ? null : usuario.setor_id;
   const acoes = listarAcoes(escopo);
   const setores = listarSetores().filter(
@@ -48,7 +48,8 @@ export default async function DashboardPage() {
           { href: "/dashboard", rotulo: "Dashboard" },
         ]
       : [
-          { href: "/coordenador", rotulo: "Ações do setor" },
+          { href: "/embaixador", rotulo: "Checklists" },
+          { href: "/embaixador/acoes", rotulo: "Ações do setor" },
           { href: "/dashboard", rotulo: "Dashboard" },
         ];
 

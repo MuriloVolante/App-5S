@@ -25,8 +25,8 @@ export default function CamposPapelSetor({
           className="campo"
         >
           <option value="">Sem papel</option>
-          <option value="lider">Lider</option>
-          <option value="coordenador">Coordenador</option>
+          <option value="auditor">Auditor</option>
+          <option value="embaixador">Embaixador</option>
           <option value="admin">Admin</option>
         </select>
       </div>

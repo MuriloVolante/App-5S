@@ -6,7 +6,7 @@ import * as repo from "@/lib/repo";
 import type { EstadoAcao } from "@/lib/actions";
 import type { Papel } from "@/types";
 
-const PAPEIS: Papel[] = ["lider", "coordenador", "admin"];
+const PAPEIS: Papel[] = ["auditor", "embaixador", "admin"];
 
 function lerPapelSetor(formData: FormData) {
   const bruto = String(formData.get("papel") ?? "");

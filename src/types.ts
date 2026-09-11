@@ -1,4 +1,4 @@
-export type Papel = "lider" | "coordenador" | "admin";
+export type Papel = "auditor" | "embaixador" | "admin";
 
 export type AppUser = {
   id: string;
@@ -40,7 +40,8 @@ export type Checklist = {
   id: string;
   codigo: string;
   setor_id: string;
-  lider_id: string;
+  criado_por: string;
+  preenchido_por: string | null;
   template_id: string;
   data_criacao: string;
   status: StatusChecklist;
@@ -77,14 +78,14 @@ export type Acao = {
 
 export const HOME_POR_PAPEL: Record<Papel, string> = {
   admin: "/admin/setores",
-  coordenador: "/coordenador",
-  lider: "/lider",
+  embaixador: "/embaixador",
+  auditor: "/auditor",
 };
 
 export const ROTULO_PAPEL: Record<Papel, string> = {
   admin: "Admin",
-  coordenador: "Coordenador",
-  lider: "Líder",
+  embaixador: "Embaixador",
+  auditor: "Auditor",
 };
 
 export const ROTULO_STATUS_CHECKLIST: Record<StatusChecklist, string> = {

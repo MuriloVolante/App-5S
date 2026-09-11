@@ -36,7 +36,7 @@ export default function UsuarioForm({ setores }: { setores: Setor[] }) {
             className="campo"
           />
         </div>
-        <CamposPapelSetor setores={setores} papelInicial="lider" />
+        <CamposPapelSetor setores={setores} papelInicial="auditor" />
         <button type="submit" disabled={pendente} className="botao">
           Adicionar
         </button>

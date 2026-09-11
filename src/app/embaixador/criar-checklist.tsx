@@ -11,10 +11,14 @@ export default function CriarChecklist({ templateId }: { templateId: string }) {
   );
 
   return (
-    <form action={action}>
+    <form action={action} className="w-full sm:w-auto">
       <input type="hidden" name="template_id" value={templateId} />
-      <button type="submit" disabled={pendente} className="botao botao-mini">
-        Criar checklist
+      <button
+        type="submit"
+        disabled={pendente}
+        className="botao botao-mini w-full"
+      >
+        Abrir checklist
       </button>
       {state.erro && <p className="erro mt-1">{state.erro}</p>}
     </form>

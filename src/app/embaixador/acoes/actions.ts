@@ -9,7 +9,7 @@ export async function definirPrazo(
   _prev: EstadoAcao,
   formData: FormData
 ): Promise<EstadoAcao> {
-  const usuario = await requirePapel(["coordenador"]);
+  const usuario = await requirePapel(["embaixador"]);
   const id = String(formData.get("id") ?? "");
   const prazo = String(formData.get("prazo") ?? "");
 
@@ -19,6 +19,6 @@ export async function definirPrazo(
   const erro = repo.definirPrazo(id, prazo, usuario.setor_id!);
   if (erro) return { erro };
 
-  revalidatePath("/coordenador");
+  revalidatePath("/embaixador/acoes");
   return { erro: null, ok: true };
 }

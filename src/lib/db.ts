@@ -16,6 +16,7 @@ function abrir() {
   db.exec("pragma journal_mode = WAL");
   db.exec("pragma foreign_keys = ON");
   criarSchema(db);
+  migrarPapeis(db);
   semearDemo(db);
   return db;
 }
@@ -66,7 +67,8 @@ function criarSchema(db: DatabaseSync) {
       id text primary key,
       codigo text unique not null,
       setor_id text not null references setores (id),
-      lider_id text not null references users (id),
+      criado_por text not null references users (id),
+      preenchido_por text references users (id),
       template_id text not null references checklist_templates (id),
       data_criacao text not null,
       status text not null default 'aberto',
@@ -108,6 +110,25 @@ function criarSchema(db: DatabaseSync) {
   `);
 }
 
+// Bases criadas antes da renomeacao de papeis (lider/coordenador) continuam validas.
+function migrarPapeis(db: DatabaseSync) {
+  const colunas = db
+    .prepare("pragma table_info(checklists)")
+    .all() as { name: string }[];
+  const nomes = colunas.map((coluna) => coluna.name);
+
+  if (nomes.includes("lider_id")) {
+    db.exec("alter table checklists rename column lider_id to criado_por");
+  }
+  if (!nomes.includes("preenchido_por")) {
+    db.exec("alter table checklists add column preenchido_por text");
+    db.exec("update checklists set preenchido_por = criado_por");
+  }
+
+  db.exec("update users set papel = 'auditor' where papel = 'lider'");
+  db.exec("update users set papel = 'embaixador' where papel = 'coordenador'");
+}
+
 function semearDemo(db: DatabaseSync) {
   if (process.env.SEM_DEMO === "1") return;
 
@@ -142,11 +163,12 @@ function semearDemo(db: DatabaseSync) {
     papel: string | null,
     setorId: string | null
   ) => {
+    const id = crypto.randomUUID();
     db.prepare(
       `insert into users (id, codigo, nome, email, senha_hash, papel, setor_id, criado_em)
        values (?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
-      crypto.randomUUID(),
+      id,
       codigo("USR"),
       nome,
       email,
@@ -155,6 +177,7 @@ function semearDemo(db: DatabaseSync) {
       setorId,
       momento
     );
+    return id;
   };
 
   const inserirTemplate = (nome: string, setorId: string, itens: string[]) => {
@@ -175,23 +198,30 @@ function semearDemo(db: DatabaseSync) {
         momento
       );
     });
+
+    return templateId;
   };
 
   const producao = inserirSetor("Produção");
   const manutencao = inserirSetor("Manutenção");
 
   inserirUsuario("Admin Demo", "admin@demo.local", "admin", null);
-  inserirUsuario("Líder Produção", "lider@demo.local", "lider", producao);
-  inserirUsuario("Coord Produção", "coord@demo.local", "coordenador", producao);
-  inserirUsuario("Líder Manutenção", "lider2@demo.local", "lider", manutencao);
+  inserirUsuario("Auditor Produção", "lider@demo.local", "auditor", producao);
+  const embaixadorProducao = inserirUsuario(
+    "Embaixador Produção",
+    "coord@demo.local",
+    "embaixador",
+    producao
+  );
+  inserirUsuario("Auditor Manutenção", "lider2@demo.local", "auditor", manutencao);
   inserirUsuario(
-    "Coord Manutenção",
+    "Embaixador Manutenção",
     "coord2@demo.local",
-    "coordenador",
+    "embaixador",
     manutencao
   );
 
-  inserirTemplate("Inspeção diária de segurança", producao, [
+  const inspecaoProducao = inserirTemplate("Inspeção diária de segurança", producao, [
     "Extintores desobstruídos e no prazo",
     "Rotas de fuga livres",
     "EPIs em uso pela equipe",
@@ -210,6 +240,19 @@ function semearDemo(db: DatabaseSync) {
     "Painéis elétricos fechados",
     "Ordens de serviço do dia atualizadas",
   ]);
+
+  // checklist ja aberto pelo embaixador, pronto para o auditor preencher
+  db.prepare(
+    `insert into checklists (id, codigo, setor_id, criado_por, preenchido_por, template_id, data_criacao, status)
+     values (?, ?, ?, ?, null, ?, ?, 'aberto')`
+  ).run(
+    crypto.randomUUID(),
+    codigo("CHK"),
+    producao,
+    embaixadorProducao,
+    inspecaoProducao,
+    momento
+  );
 
   console.log(
     "\n[demo] Banco criado com dados de exemplo. Senha de todos: 123456\n" +

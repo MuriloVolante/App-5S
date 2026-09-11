@@ -108,7 +108,7 @@ export function excluirUsuario(id: string) {
   const vinculos = conectar()
     .prepare(
       `select
-         (select count(*) from checklists where lider_id = @id) as checklists,
+         (select count(*) from checklists where criado_por = @id or preenchido_por = @id) as checklists,
          (select count(*) from acoes where aberto_por = @id or concluido_por = @id) as acoes`
     )
     .get({ id }) as { checklists: number; acoes: number };
@@ -211,13 +211,13 @@ export function excluirItem(id: string) {
 export function criarChecklist(
   templateId: string,
   setorId: string,
-  liderId: string
+  criadoPor: string
 ) {
   const id = novoId();
   conectar().prepare(
-    `insert into checklists (id, codigo, setor_id, lider_id, template_id, data_criacao, status)
+    `insert into checklists (id, codigo, setor_id, criado_por, template_id, data_criacao, status)
      values (?, ?, ?, ?, ?, ?, 'aberto')`
-  ).run(id, proximoCodigo("CHK"), setorId, liderId, templateId, agora());
+  ).run(id, proximoCodigo("CHK"), setorId, criadoPor, templateId, agora());
 
   return id;
 }
@@ -228,12 +228,20 @@ export function obterChecklist(id: string) {
     | undefined;
 }
 
-export function listarChecklistsDoLider(liderId: string) {
+export function listarChecklistsDoSetor(setorId: string) {
   return conectar()
     .prepare(
-      "select * from checklists where lider_id = ? order by data_criacao desc limit 30"
+      "select * from checklists where setor_id = ? order by data_criacao desc limit 40"
     )
-    .all(liderId) as Checklist[];
+    .all(setorId) as Checklist[];
+}
+
+export function listarChecklistsAbertos(setorId: string) {
+  return conectar()
+    .prepare(
+      "select * from checklists where setor_id = ? and status = 'aberto' order by data_criacao"
+    )
+    .all(setorId) as Checklist[];
 }
 
 export function respostasDoChecklist(checklistId: string) {
@@ -245,6 +253,7 @@ export function respostasDoChecklist(checklistId: string) {
 export function salvarResposta(entrada: {
   checklistId: string;
   itemId: string;
+  auditorId: string;
   conforme: boolean;
   observacao?: string | null;
   fotoUrl?: string | null;
@@ -259,7 +268,7 @@ export function salvarResposta(entrada: {
   const fotoUrl = entrada.conforme ? null : entrada.fotoUrl ?? null;
 
   if (!entrada.conforme && (!observacao || !fotoUrl))
-    return "Não conformidade exige descricao e foto.";
+    return "Não conformidade exige descrição e foto.";
 
   if (existente) {
     conectar().prepare(
@@ -280,10 +289,14 @@ export function salvarResposta(entrada: {
     );
   }
 
+  conectar()
+    .prepare("update checklists set preenchido_por = ? where id = ?")
+    .run(entrada.auditorId, entrada.checklistId);
+
   return null;
 }
 
-export function finalizarChecklist(checklistId: string) {
+export function finalizarChecklist(checklistId: string, auditorId: string) {
   const checklist = obterChecklist(checklistId);
   if (!checklist) return "Checklist inválido.";
   if (checklist.status === "finalizado") return "Checklist já finalizado.";
@@ -299,8 +312,8 @@ export function finalizarChecklist(checklistId: string) {
   db.exec("begin");
   try {
     db.prepare(
-      "update checklists set status = 'finalizado', finalizado_em = ? where id = ?"
-    ).run(agora(), checklistId);
+      "update checklists set status = 'finalizado', finalizado_em = ?, preenchido_por = ? where id = ?"
+    ).run(agora(), auditorId, checklistId);
 
     const naoConformes = respostas.filter((resposta) => !resposta.conforme);
     for (const resposta of naoConformes) {
@@ -314,7 +327,7 @@ export function finalizarChecklist(checklistId: string) {
         checklist.setor_id,
         resposta.observacao,
         resposta.foto_url,
-        checklist.lider_id,
+        auditorId,
         agora()
       );
     }
@@ -379,20 +392,22 @@ export function definirPrazo(id: string, prazo: string, setorId: string) {
   return null;
 }
 
-export function concluirAcao(id: string, lider: AppUser) {
+export function concluirAcao(id: string, auditor: AppUser) {
   const acao = obterAcao(id);
-  if (!acao || acao.setor_id !== lider.setor_id) return "Ação fora do seu setor.";
+  if (!acao || acao.setor_id !== auditor.setor_id)
+    return "Ação fora do seu setor.";
   if (acao.status !== "vencida") return "Apenas ações vencidas são avaliadas.";
 
   conectar().prepare(
     "update acoes set status = 'concluida', concluido_em = ?, concluido_por = ? where id = ?"
-  ).run(agora(), lider.id, id);
+  ).run(agora(), auditor.id, id);
   return null;
 }
 
-export function resetarAcao(id: string, lider: AppUser) {
+export function resetarAcao(id: string, auditor: AppUser) {
   const acao = obterAcao(id);
-  if (!acao || acao.setor_id !== lider.setor_id) return "Ação fora do seu setor.";
+  if (!acao || acao.setor_id !== auditor.setor_id)
+    return "Ação fora do seu setor.";
   if (acao.status !== "vencida") return "Apenas ações vencidas são avaliadas.";
 
   conectar().prepare(

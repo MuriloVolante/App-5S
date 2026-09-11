@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import Foto from "@/components/foto";
 import Header from "@/components/header";
+import { LINKS_AUDITOR } from "../../links";
 import { requirePapel } from "@/lib/auth";
 import {
   listarItens,
@@ -12,10 +13,7 @@ import {
 import { ROTULO_STATUS_CHECKLIST } from "@/types";
 import Execucao from "./execucao";
 
-const LINKS = [
-  { href: "/lider", rotulo: "Checklists" },
-  { href: "/lider/avaliacao", rotulo: "Ações vencidas" },
-];
+
 
 export default async function ChecklistPage({
   params,
@@ -23,11 +21,11 @@ export default async function ChecklistPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const usuario = await requirePapel(["lider"]);
+  const usuario = await requirePapel(["auditor"]);
 
   const checklist = obterChecklist(id);
   if (!checklist) notFound();
-  if (checklist.lider_id !== usuario.id) redirect("/lider");
+  if (checklist.setor_id !== usuario.setor_id) redirect("/auditor");
 
   const template = obterTemplate(checklist.template_id);
   const itens = listarItens(checklist.template_id);
@@ -35,11 +33,11 @@ export default async function ChecklistPage({
 
   return (
     <>
-      <Header usuario={usuario} links={LINKS} ativo="/lider" />
+      <Header usuario={usuario} links={LINKS_AUDITOR} ativo="/auditor" />
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 sm:px-5 sm:py-8">
         <div>
-          <Link href="/lider" className="link-voltar">
-            &larr; Meus checklists
+          <Link href="/auditor" className="link-voltar">
+            &larr; Checklists do setor
           </Link>
           <h1 className="titulo mt-2 break-words">
             <span className="codigo">{checklist.codigo}</span> {template?.nome}

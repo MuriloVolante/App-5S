@@ -8,19 +8,19 @@ import type { EstadoAcao } from "@/lib/actions";
 import type { Checklist } from "@/types";
 
 type Contexto =
-  | { bloqueio: string }
-  | { bloqueio: null; checklist: Checklist };
+  | { ok: false; bloqueio: string }
+  | { ok: true; checklist: Checklist; auditorId: string };
 
 async function checklistEditavel(checklistId: string): Promise<Contexto> {
-  const usuario = await requirePapel(["lider"]);
+  const usuario = await requirePapel(["auditor"]);
   const checklist = repo.obterChecklist(checklistId);
 
-  if (!checklist || checklist.lider_id !== usuario.id)
-    return { bloqueio: "Checklist inválido." };
+  if (!checklist || checklist.setor_id !== usuario.setor_id)
+    return { ok: false, bloqueio: "Checklist fora do seu setor." };
   if (checklist.status !== "aberto")
-    return { bloqueio: "Checklist já finalizado." };
+    return { ok: false, bloqueio: "Checklist já finalizado." };
 
-  return { bloqueio: null, checklist };
+  return { ok: true, checklist, auditorId: usuario.id };
 }
 
 export async function marcarConforme(
@@ -32,12 +32,17 @@ export async function marcarConforme(
   if (!checklistId || !itemId) return { erro: "Resposta inválida." };
 
   const contexto = await checklistEditavel(checklistId);
-  if (contexto.bloqueio) return { erro: contexto.bloqueio };
+  if (!contexto.ok) return { erro: contexto.bloqueio };
 
-  const erro = repo.salvarResposta({ checklistId, itemId, conforme: true });
+  const erro = repo.salvarResposta({
+    checklistId,
+    itemId,
+    auditorId: contexto.auditorId,
+    conforme: true,
+  });
   if (erro) return { erro };
 
-  revalidatePath(`/lider/checklists/${checklistId}`);
+  revalidatePath(`/auditor/checklists/${checklistId}`);
   return { erro: null, ok: true };
 }
 
@@ -58,19 +63,20 @@ export async function registrarNaoConforme(
     return { erro: "O anexo precisa ser uma imagem." };
 
   const contexto = await checklistEditavel(checklistId);
-  if (contexto.bloqueio) return { erro: contexto.bloqueio };
+  if (!contexto.ok) return { erro: contexto.bloqueio };
 
   const fotoUrl = await salvarFoto(foto, checklistId);
   const erro = repo.salvarResposta({
     checklistId,
     itemId,
+    auditorId: contexto.auditorId,
     conforme: false,
     observacao,
     fotoUrl,
   });
   if (erro) return { erro };
 
-  revalidatePath(`/lider/checklists/${checklistId}`);
+  revalidatePath(`/auditor/checklists/${checklistId}`);
   return { erro: null, ok: true };
 }
 
@@ -82,12 +88,13 @@ export async function finalizar(
   if (!checklistId) return { erro: "Checklist inválido." };
 
   const contexto = await checklistEditavel(checklistId);
-  if (contexto.bloqueio) return { erro: contexto.bloqueio };
+  if (!contexto.ok) return { erro: contexto.bloqueio };
 
-  const erro = repo.finalizarChecklist(checklistId);
+  const erro = repo.finalizarChecklist(checklistId, contexto.auditorId);
   if (erro) return { erro };
 
-  revalidatePath(`/lider/checklists/${checklistId}`);
-  revalidatePath("/lider");
+  revalidatePath(`/auditor/checklists/${checklistId}`);
+  revalidatePath("/auditor");
+  revalidatePath("/embaixador");
   return { erro: null, ok: true };
 }

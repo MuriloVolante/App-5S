@@ -3,21 +3,21 @@ import { requirePapel } from "@/lib/auth";
 import { listarAcoesDoSetor } from "@/lib/repo";
 import { ROTULO_STATUS_ACAO, type StatusAcao } from "@/types";
 import AcaoLinha from "./acao-linha";
-
-const LINKS = [
-  { href: "/coordenador", rotulo: "Ações do setor" },
-  { href: "/dashboard", rotulo: "Dashboard" },
-];
+import { LINKS_EMBAIXADOR } from "../links";
 
 const STATUS: StatusAcao[] = ["aberta", "com_prazo", "vencida", "concluida"];
 
-export default async function CoordenadorPage() {
-  const usuario = await requirePapel(["coordenador"]);
+export default async function AcoesDoSetorPage() {
+  const usuario = await requirePapel(["embaixador"]);
   const acoes = listarAcoesDoSetor(usuario.setor_id!);
 
   return (
     <>
-      <Header usuario={usuario} links={LINKS} ativo="/coordenador" />
+      <Header
+        usuario={usuario}
+        links={LINKS_EMBAIXADOR}
+        ativo="/embaixador/acoes"
+      />
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-5 sm:py-8">
         <div>
           <h1 className="titulo">Ações do setor</h1>

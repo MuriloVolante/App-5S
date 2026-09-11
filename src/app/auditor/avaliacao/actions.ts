@@ -9,14 +9,14 @@ export async function concluir(
   _prev: EstadoAcao,
   formData: FormData
 ): Promise<EstadoAcao> {
-  const usuario = await requirePapel(["lider"]);
+  const usuario = await requirePapel(["auditor"]);
   const id = String(formData.get("id") ?? "");
   if (!id) return { erro: "Ação inválida." };
 
   const erro = repo.concluirAcao(id, usuario);
   if (erro) return { erro };
 
-  revalidatePath("/lider/avaliacao");
+  revalidatePath("/auditor/avaliacao");
   return { erro: null, ok: true };
 }
 
@@ -24,13 +24,13 @@ export async function resetar(
   _prev: EstadoAcao,
   formData: FormData
 ): Promise<EstadoAcao> {
-  const usuario = await requirePapel(["lider"]);
+  const usuario = await requirePapel(["auditor"]);
   const id = String(formData.get("id") ?? "");
   if (!id) return { erro: "Ação inválida." };
 
   const erro = repo.resetarAcao(id, usuario);
   if (erro) return { erro };
 
-  revalidatePath("/lider/avaliacao");
+  revalidatePath("/auditor/avaliacao");
   return { erro: null, ok: true };
 }
