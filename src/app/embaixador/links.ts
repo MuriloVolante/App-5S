@@ -1,5 +1,5 @@
 export const LINKS_EMBAIXADOR = [
-  { href: "/embaixador", rotulo: "Checklists" },
-  { href: "/embaixador/acoes", rotulo: "Ações do setor" },
+  { href: "/embaixador/templates", rotulo: "Checklists" },
+  { href: "/embaixador/acoes", rotulo: "Pendências" },
   { href: "/dashboard", rotulo: "Dashboard" },
 ];

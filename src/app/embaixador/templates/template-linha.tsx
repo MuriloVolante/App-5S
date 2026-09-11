@@ -4,16 +4,14 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { ESTADO_INICIAL } from "@/lib/actions";
 import { useAtualizarAposAcao } from "@/lib/atualizar";
-import type { ChecklistTemplate, Setor } from "@/types";
+import type { ChecklistTemplate } from "@/types";
 import { atualizarTemplate, excluirTemplate } from "./actions";
 
 export default function TemplateLinha({
   template,
-  setores,
   totalItens,
 }: {
   template: ChecklistTemplate;
-  setores: Setor[];
   totalItens: number;
 }) {
   const [salvo, salvar, salvando] = useActionState(
@@ -26,40 +24,30 @@ export default function TemplateLinha({
   );
   useAtualizarAposAcao(salvo);
   useAtualizarAposAcao(removido);
+
   const erro = salvo.erro ?? removido.erro;
   const formId = `template-${template.id}`;
+  const semItens = totalItens === 0;
 
   return (
     <tr>
       <td className="codigo align-top">{template.codigo}</td>
       <td>
-        <form action={salvar} id={formId} className="flex flex-wrap gap-3">
+        <form action={salvar} id={formId}>
           <input type="hidden" name="id" value={template.id} />
-          <div className="min-w-[200px] flex-1">
-            <label className="rotulo">Nome</label>
-            <input
-              name="nome"
-              defaultValue={template.nome}
-              required
-              className="campo"
-            />
-          </div>
-          <div className="min-w-[190px]">
-            <label className="rotulo">Setor</label>
-            <select
-              name="setor_id"
-              defaultValue={template.setor_id}
-              className="campo"
-            >
-              {setores.map((setor) => (
-                <option key={setor.id} value={setor.id}>
-                  {setor.codigo} · {setor.nome}
-                </option>
-              ))}
-            </select>
-          </div>
+          <input
+            name="nome"
+            defaultValue={template.nome}
+            required
+            className="campo max-w-md"
+          />
         </form>
         {erro && <p className="erro mt-1">{erro}</p>}
+        {semItens && (
+          <p className="nota mt-1">
+            Sem itens: o auditor ainda não consegue usar este checklist.
+          </p>
+        )}
       </td>
       <td className="align-top">{totalItens}</td>
       <td className="align-top">
@@ -73,7 +61,7 @@ export default function TemplateLinha({
             Salvar
           </button>
           <Link
-            href={`/admin/templates/${template.id}`}
+            href={`/embaixador/templates/${template.id}`}
             className="botao botao-laranja botao-mini"
           >
             Itens

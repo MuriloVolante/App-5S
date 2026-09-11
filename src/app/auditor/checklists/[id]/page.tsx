@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Foto from "@/components/foto";
 import Header from "@/components/header";
 import { LINKS_AUDITOR } from "../../links";
@@ -25,7 +25,6 @@ export default async function ChecklistPage({
 
   const checklist = obterChecklist(id);
   if (!checklist) notFound();
-  if (checklist.setor_id !== usuario.setor_id) redirect("/auditor");
 
   const template = obterTemplate(checklist.template_id);
   const itens = listarItens(checklist.template_id);
@@ -37,7 +36,7 @@ export default async function ChecklistPage({
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 sm:px-5 sm:py-8">
         <div>
           <Link href="/auditor" className="link-voltar">
-            &larr; Checklists do setor
+            &larr; Auditorias
           </Link>
           <h1 className="titulo mt-2 break-words">
             <span className="codigo">{checklist.codigo}</span> {template?.nome}

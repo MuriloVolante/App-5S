@@ -7,7 +7,13 @@ import { useAtualizarAposAcao } from "@/lib/atualizar";
 import type { Acao } from "@/types";
 import { concluir, resetar } from "./actions";
 
-export default function AcaoVencida({ acao }: { acao: Acao }) {
+export default function AcaoVencida({
+  acao,
+  setor,
+}: {
+  acao: Acao;
+  setor: string;
+}) {
   const [concluido, acaoConcluir, concluindo] = useActionState(
     concluir,
     ESTADO_INICIAL
@@ -27,6 +33,7 @@ export default function AcaoVencida({ acao }: { acao: Acao }) {
         <Foto url={acao.foto_url} legenda={acao.codigo} />
         <div className="min-w-0 flex-1">
           <p className="codigo">{acao.codigo}</p>
+          <p className="nota">{setor}</p>
           <p className="mt-1 break-words">{acao.descricao_problema}</p>
         </div>
       </div>

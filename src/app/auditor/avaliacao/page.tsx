@@ -1,7 +1,7 @@
 import Header from "@/components/header";
 import Paginacao, { lerPagina } from "@/components/paginacao";
 import { requirePapel } from "@/lib/auth";
-import { listarAcoesVencidas } from "@/lib/repo";
+import { listarAcoesVencidasGlobais, listarSetores } from "@/lib/repo";
 import AcaoVencida from "./acao-vencida";
 import { LINKS_AUDITOR } from "../links";
 
@@ -12,7 +12,10 @@ export default async function AvaliacaoPage({
 }) {
   const usuario = await requirePapel(["auditor"]);
   const { pagina } = await searchParams;
-  const acoes = listarAcoesVencidas(usuario.setor_id!, lerPagina(pagina));
+  const acoes = listarAcoesVencidasGlobais(lerPagina(pagina));
+  const nomeSetor = new Map(
+    listarSetores().map((setor) => [setor.id, `${setor.codigo} · ${setor.nome}`])
+  );
 
   return (
     <>
@@ -21,7 +24,7 @@ export default async function AvaliacaoPage({
         <div>
           <h1 className="titulo">Avaliação de ações vencidas</h1>
           <p className="subtitulo mt-1">
-            Concluir encerra a ação · Resetar devolve para o embaixador definir novo
+            Concluir encerra a ação · Resetar devolve ao embaixador do setor para novo
             prazo
           </p>
         </div>
@@ -32,7 +35,11 @@ export default async function AvaliacaoPage({
           <>
             <ul className="flex flex-col gap-3">
               {acoes.itens.map((acao) => (
-                <AcaoVencida key={`${acao.id}:${acao.status}:${acao.reset_count}`} acao={acao} />
+                <AcaoVencida
+                  key={`${acao.id}:${acao.status}:${acao.reset_count}`}
+                  acao={acao}
+                  setor={nomeSetor.get(acao.setor_id) ?? ""}
+                />
               ))}
             </ul>
 

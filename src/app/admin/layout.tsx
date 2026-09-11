@@ -4,7 +4,6 @@ import { requirePapel } from "@/lib/auth";
 const LINKS = [
   { href: "/admin/setores", rotulo: "Setores" },
   { href: "/admin/usuarios", rotulo: "Usuários" },
-  { href: "/admin/templates", rotulo: "Templates" },
   { href: "/dashboard", rotulo: "Dashboard" },
 ];
 

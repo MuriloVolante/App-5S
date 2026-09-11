@@ -1,8 +1,9 @@
 # Checklist de Conformidade
 
-App web de checklists de conformidade por setor. O embaixador do setor abre o
-checklist, o auditor preenche, itens não conformes viram ações corretivas, o
-embaixador define o prazo e a ação vencida volta para o auditor concluir ou resetar.
+App web de auditoria de conformidade por setor. O embaixador do setor define o
+checklist e seus itens, o auditor (externo, sem setor fixo) abre a auditoria e avalia
+cada item, itens não conformes viram pendências para o embaixador do setor, que define
+o prazo — e a ação vencida volta para o auditor concluir ou resetar.
 
 ## Rodar (dois comandos, sem configurar nada)
 
@@ -22,9 +23,9 @@ primeira execução, já com dados de demonstração.
 | E-mail | Papel | Setor |
 |---|---|---|
 | `admin@demo.local` | Admin | — |
-| `lider@demo.local` | Auditor | SET-0001 Produção |
+| `lider@demo.local` | Auditor | — (vê todos) |
 | `coord@demo.local` | Embaixador | SET-0001 Produção |
-| `lider2@demo.local` | Auditor | SET-0002 Manutenção |
+| `lider2@demo.local` | Auditor | — (vê todos) |
 | `coord2@demo.local` | Embaixador | SET-0002 Manutenção |
 
 Os e-mails mantêm os nomes antigos só por comodidade de teste; os papéis são Auditor e
@@ -38,12 +39,15 @@ Produção local: `npm run build && npm start`.
 
 ## Fluxo
 
-1. **Admin** cadastra setores, usuários (papel + setor) e templates com itens ordenados.
-2. **Embaixador** abre um checklist a partir de um template do seu setor.
-3. **Auditor** do setor preenche o checklist item a item. Item não conforme exige
-   descrição + foto (sem foto não salva) e **finaliza**.
-4. Ao finalizar, cada resposta não conforme gera uma ação com status `aberta`.
-5. **Embaixador** define o prazo da ação → status `com_prazo`.
+1. **Admin** cadastra setores e usuários (papel + setor, quando houver).
+2. **Embaixador** — responsável pelo setor — cria os checklists do seu setor e cadastra
+   os itens que devem ser auditados, com ordem.
+3. **Auditor** — externo, sem setor fixo, enxerga todos — abre a auditoria a partir de
+   qualquer checklist e responde item a item. Item não conforme exige descrição + foto
+   (sem foto não salva). Ao final, **finaliza**.
+4. Ao finalizar, cada resposta não conforme vira uma pendência (ação `aberta`) para o
+   embaixador do setor auditado.
+5. **Embaixador** define o prazo da pendência → status `com_prazo`.
 6. Prazo vencido (`prazo < hoje`) → status `vencida`, calculado em consulta ao abrir as telas.
 7. **Auditor** avalia a ação vencida: **concluir** (grava `concluido_em`/`concluido_por`) ou
    **resetar** (volta para `aberta`, limpa o prazo, `reset_count + 1`).
@@ -56,8 +60,8 @@ Produção local: `npm run build && npm start`.
 |---|---|
 | `/login` | pública (entrar / criar conta) |
 | `/pendente` | conta criada sem papel, aguardando liberação do admin |
-| `/admin/setores`, `/admin/usuarios`, `/admin/templates`, `/admin/templates/[id]` | admin |
-| `/embaixador` (abrir checklists), `/embaixador/acoes` (prazos) | embaixador |
+| `/admin/setores`, `/admin/usuarios` | admin |
+| `/embaixador/templates`, `/embaixador/templates/[id]` (itens), `/embaixador/acoes` | embaixador |
 | `/auditor`, `/auditor/checklists/[id]`, `/auditor/avaliacao` | auditor |
 | `/dashboard` | embaixador (próprio setor) e admin (todos) |
 
@@ -99,8 +103,8 @@ tabela inteira:
 | Tela | Página |
 |---|---|
 | Admin: setores, usuários, templates, itens do template | 20 por página |
-| Embaixador: checklists do setor, ações do setor | 20 por página |
-| Auditor: checklists a preencher | 20 · finalizados 10 |
+| Embaixador: checklists do setor, itens, pendências | 20 por página |
+| Auditor: checklists disponíveis e auditorias em andamento | 20 · finalizadas 10 |
 | Auditor: ações vencidas | 20 por página |
 | Dashboard: vencidas e reincidentes | 20 · tabelas por setor 10 |
 
@@ -117,7 +121,7 @@ o auditor precisa responder todos antes de finalizar.
   persistente. **Não funcionam em Vercel/serverless**, onde o disco é efêmero — lá é
   preciso trocar por um banco gerenciado (Postgres/Supabase) e storage de objetos.
 - Sessões não expiram sozinhas; o logout remove a sessão.
-- Bases criadas antes da renomeação de papéis são migradas na abertura (papéis e a
-  coluna `checklists.lider_id`), sem precisar apagar o banco.
+- Bases anteriores são migradas na abertura: papéis renomeados, coluna
+  `checklists.lider_id` virou `criado_por` e auditores perdem o vínculo de setor.
 - No Node 22 o `node:sqlite` emite um aviso de recurso experimental no console; no Node 24
   o módulo é estável e o aviso não aparece.

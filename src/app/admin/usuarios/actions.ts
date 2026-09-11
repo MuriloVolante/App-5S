@@ -15,9 +15,11 @@ function lerPapelSetor(formData: FormData) {
   if (bruto && !PAPEIS.includes(bruto as Papel)) return "Papel inválido.";
 
   const papel = (bruto || null) as Papel | null;
-  if (papel && papel !== "admin" && !setorId) return "Selecione o setor.";
 
-  return { papel, setorId: papel && papel !== "admin" ? setorId : null };
+  // apenas o embaixador pertence a um setor; admin e auditor sao globais
+  if (papel === "embaixador" && !setorId) return "Selecione o setor.";
+
+  return { papel, setorId: papel === "embaixador" ? setorId : null };
 }
 
 export async function criarUsuario(

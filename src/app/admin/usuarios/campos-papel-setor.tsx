@@ -35,7 +35,7 @@ export default function CamposPapelSetor({
         <select
           name="setor_id"
           defaultValue={setorInicial}
-          disabled={papel === "" || papel === "admin"}
+          disabled={papel !== "embaixador"}
           className="campo"
         >
           <option value="">Sem setor</option>

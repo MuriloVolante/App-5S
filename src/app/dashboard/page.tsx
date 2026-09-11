@@ -55,12 +55,11 @@ export default async function DashboardPage({
       ? [
           { href: "/admin/setores", rotulo: "Setores" },
           { href: "/admin/usuarios", rotulo: "Usuários" },
-          { href: "/admin/templates", rotulo: "Templates" },
           { href: "/dashboard", rotulo: "Dashboard" },
         ]
       : [
-          { href: "/embaixador", rotulo: "Checklists" },
-          { href: "/embaixador/acoes", rotulo: "Ações do setor" },
+          { href: "/embaixador/templates", rotulo: "Checklists" },
+          { href: "/embaixador/acoes", rotulo: "Pendências" },
           { href: "/dashboard", rotulo: "Dashboard" },
         ];
 

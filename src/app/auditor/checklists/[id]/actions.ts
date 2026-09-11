@@ -15,8 +15,7 @@ async function checklistEditavel(checklistId: string): Promise<Contexto> {
   const usuario = await requirePapel(["auditor"]);
   const checklist = repo.obterChecklist(checklistId);
 
-  if (!checklist || checklist.setor_id !== usuario.setor_id)
-    return { ok: false, bloqueio: "Checklist fora do seu setor." };
+  if (!checklist) return { ok: false, bloqueio: "Checklist inválido." };
   if (checklist.status !== "aberto")
     return { ok: false, bloqueio: "Checklist já finalizado." };
 
@@ -95,6 +94,6 @@ export async function finalizar(
 
   revalidatePath(`/auditor/checklists/${checklistId}`);
   revalidatePath("/auditor");
-  revalidatePath("/embaixador");
+  revalidatePath("/embaixador/acoes");
   return { erro: null, ok: true };
 }

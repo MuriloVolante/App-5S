@@ -2,11 +2,17 @@
 
 import { useActionState } from "react";
 import { ESTADO_INICIAL } from "@/lib/actions";
-import { criarChecklist } from "./actions";
+import { abrirChecklist } from "./actions";
 
-export default function CriarChecklist({ templateId }: { templateId: string }) {
+export default function AbrirChecklist({
+  templateId,
+  desabilitado = false,
+}: {
+  templateId: string;
+  desabilitado?: boolean;
+}) {
   const [state, action, pendente] = useActionState(
-    criarChecklist,
+    abrirChecklist,
     ESTADO_INICIAL
   );
 
@@ -15,10 +21,11 @@ export default function CriarChecklist({ templateId }: { templateId: string }) {
       <input type="hidden" name="template_id" value={templateId} />
       <button
         type="submit"
-        disabled={pendente}
+        disabled={pendente || desabilitado}
         className="botao botao-mini w-full"
+        title={desabilitado ? "Checklist ainda sem itens" : undefined}
       >
-        Abrir checklist
+        Abrir auditoria
       </button>
       {state.erro && <p className="erro mt-1">{state.erro}</p>}
     </form>

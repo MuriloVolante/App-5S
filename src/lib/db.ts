@@ -137,6 +137,9 @@ function migrarPapeis(db: DatabaseSync) {
 
   db.exec("update users set papel = 'auditor' where papel = 'lider'");
   db.exec("update users set papel = 'embaixador' where papel = 'coordenador'");
+
+  // o auditor e externo: avalia todos os setores e por isso nao fica preso a um
+  db.exec("update users set setor_id = null where papel = 'auditor'");
 }
 
 function semearDemo(db: DatabaseSync) {
@@ -216,14 +219,15 @@ function semearDemo(db: DatabaseSync) {
   const manutencao = inserirSetor("Manutenção");
 
   inserirUsuario("Admin Demo", "admin@demo.local", "admin", null);
-  inserirUsuario("Auditor Produção", "lider@demo.local", "auditor", producao);
+  inserirUsuario("Auditor Externo", "lider@demo.local", "auditor", null);
   const embaixadorProducao = inserirUsuario(
     "Embaixador Produção",
     "coord@demo.local",
     "embaixador",
     producao
   );
-  inserirUsuario("Auditor Manutenção", "lider2@demo.local", "auditor", manutencao);
+  void embaixadorProducao;
+  inserirUsuario("Auditora Externa", "lider2@demo.local", "auditor", null);
   inserirUsuario(
     "Embaixador Manutenção",
     "coord2@demo.local",
@@ -251,18 +255,7 @@ function semearDemo(db: DatabaseSync) {
     "Ordens de serviço do dia atualizadas",
   ]);
 
-  // checklist ja aberto pelo embaixador, pronto para o auditor preencher
-  db.prepare(
-    `insert into checklists (id, codigo, setor_id, criado_por, preenchido_por, template_id, data_criacao, status)
-     values (?, ?, ?, ?, null, ?, ?, 'aberto')`
-  ).run(
-    crypto.randomUUID(),
-    codigo("CHK"),
-    producao,
-    embaixadorProducao,
-    inspecaoProducao,
-    momento
-  );
+  void inspecaoProducao;
 
   console.log(
     "\n[demo] Banco criado com dados de exemplo. Senha de todos: 123456\n" +

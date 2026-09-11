@@ -45,7 +45,7 @@ export default function UsuarioForm({ setores }: { setores: Setor[] }) {
         <CamposPapelSetor
           key={versao}
           setores={setores}
-          papelInicial="auditor"
+          papelInicial="embaixador"
         />
         <button type="submit" disabled={pendente} className="botao">
           Adicionar

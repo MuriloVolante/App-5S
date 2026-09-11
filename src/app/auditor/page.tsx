@@ -3,33 +3,48 @@ import Header from "@/components/header";
 import Paginacao, { lerPagina } from "@/components/paginacao";
 import { requirePapel } from "@/lib/auth";
 import {
-  contarAcoesVencidas,
-  listarChecklistsPorStatus,
+  contarAcoesVencidasGlobais,
+  contarItens,
+  listarChecklistsGlobaisPorStatus,
+  listarSetores,
+  listarTemplatesComSetor,
   obterTemplate,
 } from "@/lib/repo";
 import { ROTULO_STATUS_CHECKLIST } from "@/types";
+import AbrirChecklist from "./abrir-checklist";
 import { LINKS_AUDITOR } from "./links";
 
 export default async function AuditorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ pagina?: string; finalizados?: string }>;
+  searchParams: Promise<{
+    templates?: string;
+    abertos?: string;
+    finalizados?: string;
+  }>;
 }) {
   const usuario = await requirePapel(["auditor"]);
-  const { pagina, finalizados: paginaFinalizados } = await searchParams;
+  const {
+    templates: paginaTemplates,
+    abertos: paginaAbertos,
+    finalizados: paginaFinalizados,
+  } = await searchParams;
 
-  const abertos = listarChecklistsPorStatus(
-    usuario.setor_id!,
+  const templates = listarTemplatesComSetor(lerPagina(paginaTemplates));
+  const abertos = listarChecklistsGlobaisPorStatus(
     "aberto",
-    lerPagina(pagina)
+    lerPagina(paginaAbertos)
   );
-  const finalizados = listarChecklistsPorStatus(
-    usuario.setor_id!,
+  const finalizados = listarChecklistsGlobaisPorStatus(
     "finalizado",
     lerPagina(paginaFinalizados),
     10
   );
-  const vencidas = contarAcoesVencidas(usuario.setor_id!);
+  const vencidas = contarAcoesVencidasGlobais();
+
+  const nomeSetor = new Map(
+    listarSetores().map((setor) => [setor.id, `${setor.codigo} · ${setor.nome}`])
+  );
 
   return (
     <>
@@ -44,40 +59,81 @@ export default async function AuditorPage({
           </Link>
         )}
 
+        {abertos.total > 0 && (
+          <section className="flex flex-col gap-3">
+            <h1 className="titulo">Auditorias em andamento</h1>
+            <ul className="flex flex-col gap-2">
+              {abertos.itens.map((checklist) => {
+                const template = obterTemplate(checklist.template_id);
+                return (
+                  <li key={checklist.id}>
+                    <Link
+                      href={`/auditor/checklists/${checklist.id}`}
+                      className="cartao-plano item-linha cartao-item"
+                    >
+                      <span className="flex min-w-0 flex-col gap-1">
+                        <span className="break-words">
+                          <span className="codigo">{checklist.codigo}</span>{" "}
+                          {template?.nome}
+                        </span>
+                        <span className="nota">
+                          {nomeSetor.get(checklist.setor_id)} · aberta em{" "}
+                          {new Date(checklist.data_criacao).toLocaleString(
+                            "pt-BR"
+                          )}
+                        </span>
+                      </span>
+                      <span className="botao botao-mini w-full sm:w-auto">
+                        Continuar
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <Paginacao
+              base="/auditor"
+              pagina={abertos.pagina}
+              paginas={abertos.paginas}
+              total={abertos.total}
+              rotulo="em andamento"
+              parametro="abertos"
+            />
+          </section>
+        )}
+
         <section className="flex flex-col gap-3">
-          <h1 className="titulo">Checklists a preencher</h1>
-          {abertos.total === 0 ? (
+          <h2 className="titulo">Abrir auditoria</h2>
+          <p className="subtitulo">
+            Checklists definidos pelo embaixador de cada setor
+          </p>
+          {templates.total === 0 ? (
             <p className="nota">
-              Nenhum checklist aberto no seu setor. O embaixador do setor é quem
-              abre novos checklists.
+              Nenhum checklist cadastrado ainda. Os embaixadores criam os
+              checklists dos seus setores.
             </p>
           ) : (
             <>
               <ul className="flex flex-col gap-2">
-                {abertos.itens.map((checklist) => {
-                  const template = obterTemplate(checklist.template_id);
+                {templates.itens.map((template) => {
+                  const itens = contarItens(template.id);
                   return (
-                    <li key={checklist.id}>
-                      <Link
-                        href={`/auditor/checklists/${checklist.id}`}
-                        className="cartao-plano item-linha cartao-item"
-                      >
-                        <span className="flex min-w-0 flex-col gap-1">
-                          <span className="break-words">
-                            <span className="codigo">{checklist.codigo}</span>{" "}
-                            {template?.nome}
-                          </span>
-                          <span className="nota">
-                            aberto em{" "}
-                            {new Date(checklist.data_criacao).toLocaleString(
-                              "pt-BR"
-                            )}
-                          </span>
+                    <li key={template.id} className="cartao-plano cartao-item">
+                      <span className="flex min-w-0 flex-col gap-1">
+                        <span className="break-words">
+                          <span className="codigo">{template.codigo}</span>{" "}
+                          {template.nome}
                         </span>
-                        <span className="botao botao-mini w-full sm:w-auto">
-                          Preencher
+                        <span className="nota">
+                          {template.setor_codigo} · {template.setor_nome} ·{" "}
+                          {itens} itens
                         </span>
-                      </Link>
+                      </span>
+                      <AbrirChecklist
+                        templateId={template.id}
+                        desabilitado={itens === 0}
+                      />
                     </li>
                   );
                 })}
@@ -85,19 +141,20 @@ export default async function AuditorPage({
 
               <Paginacao
                 base="/auditor"
-                pagina={abertos.pagina}
-                paginas={abertos.paginas}
-                total={abertos.total}
-                rotulo="abertos"
+                pagina={templates.pagina}
+                paginas={templates.paginas}
+                total={templates.total}
+                rotulo="checklists"
+                parametro="templates"
               />
             </>
           )}
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="titulo">Finalizados</h2>
+          <h2 className="titulo">Auditorias finalizadas</h2>
           {finalizados.total === 0 ? (
-            <p className="nota">Nenhum checklist finalizado até agora.</p>
+            <p className="nota">Nenhuma auditoria finalizada até agora.</p>
           ) : (
             <>
               <ul className="flex flex-col gap-2">
@@ -115,10 +172,11 @@ export default async function AuditorPage({
                             {template?.nome}
                           </span>
                           <span className="nota">
+                            {nomeSetor.get(checklist.setor_id)} ·{" "}
                             {checklist.finalizado_em
-                              ? new Date(
-                                  checklist.finalizado_em
-                                ).toLocaleString("pt-BR")
+                              ? new Date(checklist.finalizado_em).toLocaleString(
+                                  "pt-BR"
+                                )
                               : ""}
                           </span>
                         </span>
@@ -136,7 +194,7 @@ export default async function AuditorPage({
                 pagina={finalizados.pagina}
                 paginas={finalizados.paginas}
                 total={finalizados.total}
-                rotulo="finalizados"
+                rotulo="finalizadas"
                 parametro="finalizados"
               />
             </>

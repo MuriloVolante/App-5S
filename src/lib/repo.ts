@@ -183,12 +183,57 @@ export function listarTemplates(pagina = 1) {
   );
 }
 
-export function listarTemplatesDoSetor(setorId: string) {
-  return conectar()
-    .prepare(
-      "select * from checklist_templates where setor_id = ? order by codigo"
-    )
-    .all(setorId) as ChecklistTemplate[];
+export function listarTemplatesDoSetor(setorId: string, pagina = 1) {
+  return consultarPagina<ChecklistTemplate>(
+    "select * from checklist_templates where setor_id = ? order by codigo",
+    "select count(*) as total from checklist_templates where setor_id = ?",
+    [setorId],
+    pagina
+  );
+}
+
+// usados pelo auditor, que enxerga todos os setores
+export function listarTemplatesComSetor(pagina = 1) {
+  return consultarPagina<ChecklistTemplate & { setor_codigo: string; setor_nome: string }>(
+    `select t.*, s.codigo as setor_codigo, s.nome as setor_nome
+     from checklist_templates t join setores s on s.id = t.setor_id
+     order by s.codigo, t.codigo`,
+    "select count(*) as total from checklist_templates",
+    [],
+    pagina
+  );
+}
+
+export function listarChecklistsGlobaisPorStatus(
+  status: StatusChecklist,
+  pagina = 1,
+  porPagina = POR_PAGINA
+) {
+  return consultarPagina<Checklist>(
+    "select * from checklists where status = ? order by data_criacao desc",
+    "select count(*) as total from checklists where status = ?",
+    [status],
+    pagina,
+    porPagina
+  );
+}
+
+export function listarAcoesVencidasGlobais(pagina = 1) {
+  aplicarVencimentos();
+  return consultarPagina<Acao>(
+    "select * from acoes where status = 'vencida' order by prazo",
+    "select count(*) as total from acoes where status = 'vencida'",
+    [],
+    pagina
+  );
+}
+
+export function contarAcoesVencidasGlobais() {
+  aplicarVencimentos();
+  const linha = conectar()
+    .prepare("select count(*) as total from acoes where status = 'vencida'")
+    .get<{ total: number }>();
+  return linha?.total ?? 0;
 }
 
 export function obterTemplate(id: string) {
@@ -288,30 +333,6 @@ export function obterChecklist(id: string) {
   return conectar().prepare("select * from checklists where id = ?").get(id) as
     | Checklist
     | undefined;
-}
-
-export function listarChecklistsDoSetor(setorId: string, pagina = 1) {
-  return consultarPagina<Checklist>(
-    "select * from checklists where setor_id = ? order by data_criacao desc",
-    "select count(*) as total from checklists where setor_id = ?",
-    [setorId],
-    pagina
-  );
-}
-
-export function listarChecklistsPorStatus(
-  setorId: string,
-  status: StatusChecklist,
-  pagina = 1,
-  porPagina = POR_PAGINA
-) {
-  return consultarPagina<Checklist>(
-    "select * from checklists where setor_id = ? and status = ? order by data_criacao desc",
-    "select count(*) as total from checklists where setor_id = ? and status = ?",
-    [setorId, status],
-    pagina,
-    porPagina
-  );
 }
 
 export function respostasDoChecklist(checklistId: string) {
@@ -426,26 +447,6 @@ export function listarAcoesDoSetor(setorId: string, pagina = 1) {
     [setorId],
     pagina
   );
-}
-
-export function listarAcoesVencidas(setorId: string, pagina = 1) {
-  aplicarVencimentos();
-  return consultarPagina<Acao>(
-    "select * from acoes where setor_id = ? and status = 'vencida' order by prazo",
-    "select count(*) as total from acoes where setor_id = ? and status = 'vencida'",
-    [setorId],
-    pagina
-  );
-}
-
-export function contarAcoesVencidas(setorId: string) {
-  aplicarVencimentos();
-  const linha = conectar()
-    .prepare(
-      "select count(*) as total from acoes where setor_id = ? and status = 'vencida'"
-    )
-    .get<{ total: number }>(setorId);
-  return linha?.total ?? 0;
 }
 
 /* indicadores do dashboard (agregacao no banco, sem carregar as linhas) */
@@ -610,8 +611,7 @@ export function definirPrazo(id: string, prazo: string, setorId: string) {
 
 export function concluirAcao(id: string, auditor: AppUser) {
   const acao = obterAcao(id);
-  if (!acao || acao.setor_id !== auditor.setor_id)
-    return "Ação fora do seu setor.";
+  if (!acao) return "Ação inválida.";
   if (acao.status !== "vencida") return "Apenas ações vencidas são avaliadas.";
 
   conectar().prepare(
@@ -622,8 +622,7 @@ export function concluirAcao(id: string, auditor: AppUser) {
 
 export function resetarAcao(id: string, auditor: AppUser) {
   const acao = obterAcao(id);
-  if (!acao || acao.setor_id !== auditor.setor_id)
-    return "Ação fora do seu setor.";
+  if (!acao) return "Ação inválida.";
   if (acao.status !== "vencida") return "Apenas ações vencidas são avaliadas.";
 
   conectar().prepare(
