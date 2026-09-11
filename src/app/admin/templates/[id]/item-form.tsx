@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { ESTADO_INICIAL } from "@/lib/actions";
+import { useAtualizarAposAcao } from "@/lib/atualizar";
 import { criarItem } from "../actions";
 
 export default function ItemForm({
@@ -12,6 +13,7 @@ export default function ItemForm({
   proximaOrdem: number;
 }) {
   const [state, action, pendente] = useActionState(criarItem, ESTADO_INICIAL);
+  useAtualizarAposAcao(state);
   const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

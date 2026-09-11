@@ -1,17 +1,23 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { ESTADO_INICIAL } from "@/lib/actions";
+import { useAtualizarAposAcao } from "@/lib/atualizar";
 import type { Setor } from "@/types";
 import CamposPapelSetor from "./campos-papel-setor";
 import { criarUsuario } from "./actions";
 
 export default function UsuarioForm({ setores }: { setores: Setor[] }) {
   const [state, action, pendente] = useActionState(criarUsuario, ESTADO_INICIAL);
+  useAtualizarAposAcao(state);
   const ref = useRef<HTMLFormElement>(null);
+  const [versao, setVersao] = useState(0);
 
   useEffect(() => {
-    if (state.ok) ref.current?.reset();
+    if (state.ok) {
+      ref.current?.reset();
+      setVersao((atual) => atual + 1);
+    }
   }, [state]);
 
   return (
@@ -36,7 +42,11 @@ export default function UsuarioForm({ setores }: { setores: Setor[] }) {
             className="campo"
           />
         </div>
-        <CamposPapelSetor setores={setores} papelInicial="auditor" />
+        <CamposPapelSetor
+          key={versao}
+          setores={setores}
+          papelInicial="auditor"
+        />
         <button type="submit" disabled={pendente} className="botao">
           Adicionar
         </button>

@@ -2,10 +2,12 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { ESTADO_INICIAL } from "@/lib/actions";
+import { useAtualizarAposAcao } from "@/lib/atualizar";
 import { criarSetor } from "./actions";
 
 export default function SetorForm() {
   const [state, action, pendente] = useActionState(criarSetor, ESTADO_INICIAL);
+  useAtualizarAposAcao(state);
   const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

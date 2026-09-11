@@ -55,7 +55,7 @@ export default async function TemplateItensPage({
           </thead>
           <tbody>
             {itens.itens.map((item) => (
-              <ItemLinha key={item.id} item={item} />
+              <ItemLinha key={`${item.id}:${item.descricao}:${item.ordem}`} item={item} />
             ))}
             {itens.total === 0 && (
               <tr>

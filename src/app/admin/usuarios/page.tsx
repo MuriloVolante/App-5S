@@ -37,7 +37,7 @@ export default async function UsuariosPage({
           <tbody>
             {usuarios.itens.map((usuario) => (
               <UsuarioLinha
-                key={usuario.id}
+                key={`${usuario.id}:${usuario.nome}:${usuario.papel}:${usuario.setor_id}`}
                 usuario={usuario}
                 setores={setores}
               />

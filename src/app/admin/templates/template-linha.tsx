@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { ESTADO_INICIAL } from "@/lib/actions";
+import { useAtualizarAposAcao } from "@/lib/atualizar";
 import type { ChecklistTemplate, Setor } from "@/types";
 import { atualizarTemplate, excluirTemplate } from "./actions";
 
@@ -23,6 +24,8 @@ export default function TemplateLinha({
     excluirTemplate,
     ESTADO_INICIAL
   );
+  useAtualizarAposAcao(salvo);
+  useAtualizarAposAcao(removido);
   const erro = salvo.erro ?? removido.erro;
   const formId = `template-${template.id}`;
 

@@ -2,11 +2,13 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { ESTADO_INICIAL } from "@/lib/actions";
+import { useAtualizarAposAcao } from "@/lib/atualizar";
 import type { Setor } from "@/types";
 import { criarTemplate } from "./actions";
 
 export default function TemplateForm({ setores }: { setores: Setor[] }) {
   const [state, action, pendente] = useActionState(criarTemplate, ESTADO_INICIAL);
+  useAtualizarAposAcao(state);
   const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

@@ -25,7 +25,7 @@ export default async function EmbaixadorPage({
 
   return (
     <>
-      <Header usuario={usuario} links={LINKS_EMBAIXADOR} ativo="/embaixador" />
+      <Header usuario={usuario} links={LINKS_EMBAIXADOR} />
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-6 sm:px-5 sm:py-8">
         <div>
           <h1 className="titulo">Checklists do setor</h1>

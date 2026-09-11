@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { ESTADO_INICIAL } from "@/lib/actions";
+import { useAtualizarAposAcao } from "@/lib/atualizar";
 import type { ChecklistItem } from "@/types";
 import { atualizarItem, excluirItem } from "../actions";
 
@@ -11,6 +12,8 @@ export default function ItemLinha({ item }: { item: ChecklistItem }) {
     excluirItem,
     ESTADO_INICIAL
   );
+  useAtualizarAposAcao(salvo);
+  useAtualizarAposAcao(removido);
   const erro = salvo.erro ?? removido.erro;
   const formId = `item-${item.id}`;
 

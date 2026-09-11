@@ -33,7 +33,7 @@ export default async function AuditorPage({
 
   return (
     <>
-      <Header usuario={usuario} links={LINKS_AUDITOR} ativo="/auditor" />
+      <Header usuario={usuario} links={LINKS_AUDITOR} />
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-6 sm:px-5 sm:py-8">
         {vencidas > 0 && (
           <Link href="/auditor/avaliacao" className="cartao barra-acao">

@@ -31,7 +31,7 @@ export default async function SetoresPage({
           </thead>
           <tbody>
             {setores.itens.map((setor) => (
-              <SetorLinha key={setor.id} setor={setor} />
+              <SetorLinha key={`${setor.id}:${setor.nome}`} setor={setor} />
             ))}
             {setores.total === 0 && (
               <tr>

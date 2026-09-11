@@ -24,7 +24,6 @@ export default async function AcoesDoSetorPage({
       <Header
         usuario={usuario}
         links={LINKS_EMBAIXADOR}
-        ativo="/embaixador/acoes"
       />
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-5 sm:py-8">
         <div>
@@ -59,7 +58,7 @@ export default async function AcoesDoSetorPage({
           </thead>
           <tbody>
             {acoes.itens.map((acao) => (
-              <AcaoLinha key={acao.id} acao={acao} />
+              <AcaoLinha key={`${acao.id}:${acao.status}:${acao.prazo}`} acao={acao} />
             ))}
             {acoes.total === 0 && (
               <tr>

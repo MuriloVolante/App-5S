@@ -34,7 +34,7 @@ export default async function TemplatesPage({
           <tbody>
             {templates.itens.map((template) => (
               <TemplateLinha
-                key={template.id}
+                key={`${template.id}:${template.nome}:${template.setor_id}`}
                 template={template}
                 setores={setores}
                 totalItens={contarItens(template.id)}

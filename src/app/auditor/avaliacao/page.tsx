@@ -16,7 +16,7 @@ export default async function AvaliacaoPage({
 
   return (
     <>
-      <Header usuario={usuario} links={LINKS_AUDITOR} ativo="/auditor/avaliacao" />
+      <Header usuario={usuario} links={LINKS_AUDITOR} />
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 sm:px-5 sm:py-8">
         <div>
           <h1 className="titulo">Avaliação de ações vencidas</h1>
@@ -32,7 +32,7 @@ export default async function AvaliacaoPage({
           <>
             <ul className="flex flex-col gap-3">
               {acoes.itens.map((acao) => (
-                <AcaoVencida key={acao.id} acao={acao} />
+                <AcaoVencida key={`${acao.id}:${acao.status}:${acao.reset_count}`} acao={acao} />
               ))}
             </ul>
 

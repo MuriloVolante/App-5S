@@ -3,11 +3,13 @@
 import { useActionState } from "react";
 import Foto from "@/components/foto";
 import { ESTADO_INICIAL } from "@/lib/actions";
+import { useAtualizarAposAcao } from "@/lib/atualizar";
 import { ROTULO_STATUS_ACAO, type Acao } from "@/types";
 import { definirPrazo } from "./actions";
 
 export default function AcaoLinha({ acao }: { acao: Acao }) {
   const [state, action, pendente] = useActionState(definirPrazo, ESTADO_INICIAL);
+  useAtualizarAposAcao(state);
 
   return (
     <tr>

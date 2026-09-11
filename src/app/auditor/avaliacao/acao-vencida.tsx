@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import Foto from "@/components/foto";
 import { ESTADO_INICIAL } from "@/lib/actions";
+import { useAtualizarAposAcao } from "@/lib/atualizar";
 import type { Acao } from "@/types";
 import { concluir, resetar } from "./actions";
 
@@ -15,6 +16,8 @@ export default function AcaoVencida({ acao }: { acao: Acao }) {
     resetar,
     ESTADO_INICIAL
   );
+  useAtualizarAposAcao(concluido);
+  useAtualizarAposAcao(resetado);
   const erro = concluido.erro ?? resetado.erro;
   const ocupado = concluindo || resetando;
 

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { ESTADO_INICIAL } from "@/lib/actions";
+import { useAtualizarAposAcao } from "@/lib/atualizar";
 import type { Setor } from "@/types";
 import { atualizarSetor, excluirSetor } from "./actions";
 
@@ -14,6 +15,8 @@ export default function SetorLinha({ setor }: { setor: Setor }) {
     excluirSetor,
     ESTADO_INICIAL
   );
+  useAtualizarAposAcao(salvo);
+  useAtualizarAposAcao(removido);
   const erro = salvo.erro ?? removido.erro;
   const formId = `setor-${setor.id}`;
 

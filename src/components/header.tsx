@@ -1,17 +1,15 @@
-import Link from "next/link";
 import Marca from "@/components/marca";
+import NavLinks, { type LinkNav } from "@/components/nav-links";
 import { ROTULO_PAPEL, type AppUser } from "@/types";
 
-export type LinkNav = { href: string; rotulo: string };
+export type { LinkNav };
 
 export default function Header({
   usuario,
   links = [],
-  ativo,
 }: {
   usuario: AppUser;
   links?: LinkNav[];
-  ativo?: string;
 }) {
   return (
     <header className="cabecalho">
@@ -34,19 +32,7 @@ export default function Header({
         </div>
       </div>
 
-      {links.length > 0 && (
-        <nav className="cabecalho-nav">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`link-nav ${ativo === link.href ? "link-nav-ativo" : ""}`}
-            >
-              {link.rotulo}
-            </Link>
-          ))}
-        </nav>
-      )}
+      {links.length > 0 && <NavLinks links={links} />}
 
       <div className="faixa-laranja" />
     </header>

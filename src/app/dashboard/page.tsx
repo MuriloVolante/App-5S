@@ -66,7 +66,7 @@ export default async function DashboardPage({
 
   return (
     <>
-      <Header usuario={usuario} links={links} ativo="/dashboard" />
+      <Header usuario={usuario} links={links} />
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 sm:px-5 sm:py-8">
         <div>
           <h1 className="titulo">Dashboard</h1>
