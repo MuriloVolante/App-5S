@@ -1,78 +1,89 @@
-# App5S — Checklist de Conformidade
+# Checklist de Conformidade
 
-Next.js (App Router) + Supabase (Postgres, Auth).
+App web de checklists de conformidade por setor. Líder executa o checklist, itens não
+conformes viram ações corretivas, coordenador define prazo, ação vencida volta para o
+líder concluir ou resetar.
 
-## Fase 1 (implementada)
+## Rodar (dois comandos, sem configurar nada)
 
-- Scaffold Next.js + conexao Supabase
-- Schema: `setores`, `users` com `codigo` sequencial (`SET-0001`, `USR-0001`)
-- Login email/senha com redirecionamento por papel (`admin`, `coordenador`, `lider`)
+```bash
+npm install
+npm run dev
+```
 
-## Fase 2 (implementada)
+Abre em http://localhost:3000. O banco (SQLite) é criado sozinho em `data/app.db` na
+primeira execução, já com dados de demonstração.
 
-- `/admin/setores`: CRUD de setores
-- `/admin/usuarios`: CRUD de usuarios (cria no Supabase Auth + perfil, papel e setor vinculado)
+### Contas de demonstração (senha `123456` em todas)
 
-Requer `SUPABASE_SERVICE_ROLE_KEY` no `.env.local` (usada apenas em server actions).
+| E-mail | Papel | Setor |
+|---|---|---|
+| `admin@demo.local` | Admin | — |
+| `lider@demo.local` | Líder | SET-0001 Produção |
+| `coord@demo.local` | Coordenador | SET-0001 Produção |
+| `lider2@demo.local` | Líder | SET-0002 Manutenção |
+| `coord2@demo.local` | Coordenador | SET-0002 Manutenção |
 
-## Fase 3 (implementada)
+Para começar do zero: `npm run reset` (apaga `data/`, incluindo fotos) e rode `npm run dev`
+de novo. Para subir sem os dados de exemplo: `SEM_DEMO=1 npm run dev` — aí a primeira conta
+criada na tela de login vira administradora.
 
-- Tabelas `checklist_templates` e `checklist_items` (`TPL-0001`, `ITM-0001`)
-- `/admin/templates`: CRUD de templates por setor
-- `/admin/templates/[id]`: CRUD de itens do template com campo `ordem`
+Produção local: `npm run build && npm start`.
 
-## Fase 4 (implementada)
+## Fluxo
 
-- Tabelas `checklists` (`CHK-0001`) e `checklist_respostas`
-- `/lider`: templates do setor, criacao de checklist e lista dos proprios checklists
-- `/lider/checklists/[id]`: toggle conforme/nao conforme, modal obrigatorio
-  (descricao + foto) e finalizacao
-- Fotos no bucket `checklist-fotos` do Supabase Storage
+1. **Admin** cadastra setores, usuários (papel + setor) e templates com itens ordenados.
+2. **Líder** cria um checklist a partir de um template do seu setor e responde cada item.
+   Item não conforme exige descrição + foto (sem foto não salva).
+3. Ao **finalizar**, cada resposta não conforme gera uma ação com status `aberta`.
+4. **Coordenador** define o prazo da ação → status `com_prazo`.
+5. Prazo vencido (`prazo < hoje`) → status `vencida`, calculado em consulta ao abrir as telas.
+6. **Líder** avalia a ação vencida: **concluir** (grava `concluido_em`/`concluido_por`) ou
+   **resetar** (volta para `aberta`, limpa o prazo, `reset_count + 1`).
+7. **Dashboard** (coordenador e admin): ações por status/setor, vencidas, reincidência e
+   tempo médio entre abertura e conclusão.
 
-## Fase 5 (implementada)
-
-- Tabela `acoes` (`ACA-0001`)
-- Trigger `checklists_gerar_acoes`: ao finalizar checklist, cria uma acao com status
-  `aberta` para cada resposta `conforme = false`
-
-## Fase 6 (implementada)
-
-- `/coordenador`: lista de acoes do setor com codigo, problema, status, prazo e resets
-- Acao `aberta` recebe prazo (data manual) e passa para `com_prazo`
-
-## Fase 7 (implementada)
-
-- `aplicar_vencimentos()`: acao `com_prazo` com `prazo < hoje` vira `vencida`
-  (executada ao abrir as telas de acoes, sem input manual)
-- `/lider/avaliacao`: concluir (grava `concluido_em`/`concluido_por`) ou resetar
-  (volta para `aberta`, limpa prazo, `reset_count + 1`)
-
-## Fase 8 (implementada)
-
-- `/dashboard` (coordenador e admin): acoes por status e setor, vencidas (contagem e
-  lista), acoes com `reset_count > 0` e tempo medio entre abertura e conclusao por setor
-- Coordenador ve apenas o proprio setor (RLS); admin ve todos
-
-## Setup
-
-1. `npm install`
-2. Criar projeto no Supabase, copiar `.env.example` para `.env.local` e preencher
-   `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-3. Rodar os arquivos de `supabase/migrations/` em ordem no SQL Editor.
-4. Criar o usuario admin em Authentication > Users e rodar `supabase/seed.sql`
-   substituindo `<AUTH_USER_ID>` e `<EMAIL>`.
-5. `npm run dev`
-
-## Rotas
+## Papéis e telas
 
 | Rota | Acesso |
 |---|---|
-| `/login` | publica |
-| `/` | redireciona pelo papel |
-| `/admin/setores` | admin |
-| `/admin/usuarios` | admin |
-| `/admin/templates` e `/admin/templates/[id]` | admin |
-| `/lider` e `/lider/checklists/[id]` | lider |
-| `/lider/avaliacao` | lider |
+| `/login` | pública (entrar / criar conta) |
+| `/pendente` | conta criada sem papel, aguardando liberação do admin |
+| `/admin/setores`, `/admin/usuarios`, `/admin/templates`, `/admin/templates/[id]` | admin |
+| `/lider`, `/lider/checklists/[id]`, `/lider/avaliacao` | líder |
 | `/coordenador` | coordenador |
-| `/dashboard` | coordenador e admin |
+| `/dashboard` | coordenador (próprio setor) e admin (todos) |
+
+Todas as entidades têm código sequencial legível — `SET-0001`, `USR-0001`, `TPL-0001`,
+`ITM-0001`, `CHK-0001`, `ACA-0001` — e o UUID nunca aparece na interface.
+
+## Stack
+
+- Next.js 16 (App Router) + React 19 + TypeScript
+- SQLite via `better-sqlite3` (arquivo local, sem servidor de banco)
+- Autenticação própria: senha com `scrypt`, sessão em cookie httpOnly
+- Fotos gravadas em `data/uploads` e servidas por `/api/fotos/...`
+
+Estrutura:
+
+```
+src/lib/db.ts      schema, códigos sequenciais e dados de demonstração
+src/lib/repo.ts    consultas e regras de negócio
+src/lib/sessao.ts  sessão em cookie
+src/app/...        telas por papel
+```
+
+### Variáveis opcionais
+
+| Variável | Efeito |
+|---|---|
+| `DATABASE_FILE` | caminho do arquivo SQLite (padrão `data/app.db`) |
+| `UPLOADS_DIR` | pasta das fotos (padrão `data/uploads`) |
+| `SEM_DEMO=1` | não cria setores, usuários e templates de exemplo |
+
+## Limitações
+
+- SQLite em arquivo e fotos em disco funcionam localmente e em servidor com disco
+  persistente. **Não funcionam em Vercel/serverless**, onde o disco é efêmero — lá é
+  preciso trocar por um banco gerenciado (Postgres/Supabase) e storage de objetos.
+- Sessões não expiram sozinhas; o logout remove a sessão.

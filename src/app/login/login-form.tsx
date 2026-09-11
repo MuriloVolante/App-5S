@@ -1,43 +1,88 @@
 "use client";
 
-import { useActionState } from "react";
-import { login, type LoginState } from "./actions";
+import { useActionState, useState } from "react";
+import { criarConta, entrar, type EstadoLogin } from "./actions";
 
-const inicial: LoginState = { erro: null };
+const INICIAL: EstadoLogin = { erro: null, aba: "entrar" };
 
 export default function LoginForm() {
-  const [state, action, pending] = useActionState(login, inicial);
+  const [aba, setAba] = useState<"entrar" | "criar">("entrar");
+  const [login, acaoLogin, entrando] = useActionState(entrar, INICIAL);
+  const [cadastro, acaoCadastro, criando] = useActionState(criarConta, INICIAL);
+
+  const erro = aba === "entrar" ? login.erro : cadastro.erro;
 
   return (
-    <form action={action} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1 text-sm">
-        Email
-        <input
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          className="rounded border border-neutral-300 px-3 py-2"
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        Senha
-        <input
-          name="senha"
-          type="password"
-          required
-          autoComplete="current-password"
-          className="rounded border border-neutral-300 px-3 py-2"
-        />
-      </label>
-      {state.erro && <p className="text-sm text-red-600">{state.erro}</p>}
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded bg-neutral-900 px-3 py-2 text-white disabled:opacity-50"
+    <div className="cartao">
+      <div className="abas border-0 border-b-2">
+        <button
+          type="button"
+          onClick={() => setAba("entrar")}
+          className={`aba ${aba === "entrar" ? "aba-ativa" : ""}`}
+        >
+          Entrar
+        </button>
+        <button
+          type="button"
+          onClick={() => setAba("criar")}
+          className={`aba ${aba === "criar" ? "aba-ativa" : ""}`}
+        >
+          Criar conta
+        </button>
+      </div>
+
+      <form
+        action={aba === "entrar" ? acaoLogin : acaoCadastro}
+        key={aba}
+        className="flex flex-col gap-4 p-5"
       >
-        {pending ? "Entrando..." : "Entrar"}
-      </button>
-    </form>
+        {aba === "criar" && (
+          <div>
+            <label className="rotulo" htmlFor="nome">
+              Nome
+            </label>
+            <input id="nome" name="nome" required className="campo" />
+          </div>
+        )}
+
+        <div>
+          <label className="rotulo" htmlFor="email">
+            E-mail
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            className="campo"
+          />
+        </div>
+
+        <div>
+          <label className="rotulo" htmlFor="senha">
+            Senha
+          </label>
+          <input
+            id="senha"
+            name="senha"
+            type="password"
+            required
+            autoComplete={aba === "entrar" ? "current-password" : "new-password"}
+            className="campo"
+          />
+        </div>
+
+        {erro && <p className="erro">{erro}</p>}
+
+        <button
+          type="submit"
+          disabled={entrando || criando}
+          className="botao w-full"
+        >
+          {aba === "entrar" ? "Entrar" : "Criar conta"}
+        </button>
+      </form>
+    </div>
   );
 }

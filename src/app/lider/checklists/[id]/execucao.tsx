@@ -1,13 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { BOTAO, BOTAO_SEC, INPUT } from "@/components/ui";
+import { useActionState, useEffect, useState } from "react";
+import { ESTADO_INICIAL } from "@/lib/actions";
 import type { ChecklistItem, ChecklistResposta } from "@/types";
-import { finalizarChecklist, salvarResposta } from "./actions";
-
-const BUCKET = "checklist-fotos";
+import { finalizar, marcarConforme, registrarNaoConforme } from "./actions";
 
 export default function Execucao({
   checklistId,
@@ -18,74 +14,39 @@ export default function Execucao({
   itens: ChecklistItem[];
   respostas: ChecklistResposta[];
 }) {
-  const router = useRouter();
-  const [pendente, startTransition] = useTransition();
-  const [erro, setErro] = useState<string | null>(null);
   const [itemModal, setItemModal] = useState<ChecklistItem | null>(null);
+  const [conforme, acaoConforme] = useActionState(
+    marcarConforme,
+    ESTADO_INICIAL
+  );
+  const [final, acaoFinal, finalizando] = useActionState(
+    finalizar,
+    ESTADO_INICIAL
+  );
 
-  const porItem = new Map(respostas.map((r) => [r.item_id, r]));
-
-  function marcarConforme(item: ChecklistItem) {
-    setErro(null);
-    startTransition(async () => {
-      const { erro } = await salvarResposta({
-        checklistId,
-        itemId: item.id,
-        conforme: true,
-      });
-      if (erro) setErro(erro);
-      else router.refresh();
-    });
-  }
-
-  function finalizar() {
-    setErro(null);
-    startTransition(async () => {
-      const { erro } = await finalizarChecklist(checklistId);
-      if (erro) setErro(erro);
-      else router.refresh();
-    });
-  }
-
-  async function registrarNaoConforme(
-    item: ChecklistItem,
-    observacao: string,
-    arquivo: File
-  ) {
-    const supabase = createClient();
-    const extensao = arquivo.name.split(".").pop() ?? "jpg";
-    const caminho = `${checklistId}/${item.id}-${Date.now()}.${extensao}`;
-
-    const { error } = await supabase.storage
-      .from(BUCKET)
-      .upload(caminho, arquivo, { upsert: false });
-    if (error) return error.message;
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from(BUCKET).getPublicUrl(caminho);
-
-    const resultado = await salvarResposta({
-      checklistId,
-      itemId: item.id,
-      conforme: false,
-      observacao,
-      fotoUrl: publicUrl,
-    });
-    if (resultado.erro) return resultado.erro;
-
-    router.refresh();
-    return null;
-  }
-
-  const total = itens.length;
+  const porItem = new Map(respostas.map((resposta) => [resposta.item_id, resposta]));
   const respondidos = itens.filter((item) => porItem.has(item.id)).length;
+  const erro = conforme.erro ?? final.erro;
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-neutral-500">
-        {respondidos} de {total} itens respondidos
-      </p>
+      <div className="cartao-plano flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+        <span className="subtitulo">
+          {respondidos} de {itens.length} itens respondidos
+        </span>
+        <form action={acaoFinal}>
+          <input type="hidden" name="checklist_id" value={checklistId} />
+          <button
+            type="submit"
+            disabled={finalizando}
+            className="botao botao-laranja"
+          >
+            Finalizar checklist
+          </button>
+        </form>
+      </div>
+
+      {erro && <p className="erro">{erro}</p>}
 
       <ul className="flex flex-col gap-2">
         {itens.map((item) => {
@@ -93,14 +54,21 @@ export default function Execucao({
           return (
             <li
               key={item.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded border border-neutral-200 bg-white px-4 py-3"
+              className={`cartao-plano item-linha flex flex-wrap items-center justify-between gap-4 px-4 py-3 ${
+                resposta
+                  ? resposta.conforme
+                    ? "item-conforme"
+                    : "item-nao-conforme"
+                  : ""
+              }`}
             >
-              <div className="text-sm">
-                <span className="font-mono text-neutral-500">{item.codigo}</span>{" "}
-                {item.descricao}
+              <div className="min-w-[220px] flex-1">
+                <p>
+                  <span className="codigo">{item.codigo}</span> {item.descricao}
+                </p>
                 {resposta && !resposta.conforme && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {resposta.observacao}{" "}
+                  <p className="nota mt-1">
+                    {resposta.observacao} ·{" "}
                     {resposta.foto_url && (
                       <a
                         href={resposta.foto_url}
@@ -108,35 +76,34 @@ export default function Execucao({
                         rel="noreferrer"
                         className="underline"
                       >
-                        foto
+                        ver foto
                       </a>
                     )}
                   </p>
                 )}
               </div>
+
               <div className="flex items-center gap-2">
-                {resposta && (
-                  <span
-                    className={`text-xs ${
-                      resposta.conforme ? "text-green-700" : "text-red-600"
+                <form action={acaoConforme}>
+                  <input type="hidden" name="checklist_id" value={checklistId} />
+                  <input type="hidden" name="item_id" value={item.id} />
+                  <button
+                    type="submit"
+                    className={`botao botao-secundario botao-mini ${
+                      resposta?.conforme ? "botao-conforme-ativo" : ""
                     }`}
                   >
-                    {resposta.conforme ? "Conforme" : "Nao conforme"}
-                  </span>
-                )}
+                    Conforme
+                  </button>
+                </form>
                 <button
                   type="button"
-                  disabled={pendente}
-                  onClick={() => marcarConforme(item)}
-                  className={BOTAO_SEC}
-                >
-                  Conforme
-                </button>
-                <button
-                  type="button"
-                  disabled={pendente}
                   onClick={() => setItemModal(item)}
-                  className={`${BOTAO_SEC} text-red-600`}
+                  className={`botao botao-perigo botao-mini ${
+                    resposta && !resposta.conforme
+                      ? "botao-nao-conforme-ativo"
+                      : ""
+                  }`}
                 >
                   Nao conforme
                 </button>
@@ -146,24 +113,11 @@ export default function Execucao({
         })}
       </ul>
 
-      {erro && <p className="text-sm text-red-600">{erro}</p>}
-
-      <div>
-        <button
-          type="button"
-          onClick={finalizar}
-          disabled={pendente}
-          className={BOTAO}
-        >
-          Finalizar checklist
-        </button>
-      </div>
-
       {itemModal && (
         <ModalNaoConforme
+          checklistId={checklistId}
           item={itemModal}
           aoFechar={() => setItemModal(null)}
-          aoSalvar={registrarNaoConforme}
         />
       )}
     </div>
@@ -171,75 +125,76 @@ export default function Execucao({
 }
 
 function ModalNaoConforme({
+  checklistId,
   item,
   aoFechar,
-  aoSalvar,
 }: {
+  checklistId: string;
   item: ChecklistItem;
   aoFechar: () => void;
-  aoSalvar: (
-    item: ChecklistItem,
-    observacao: string,
-    arquivo: File
-  ) => Promise<string | null>;
 }) {
-  const [erro, setErro] = useState<string | null>(null);
-  const [enviando, setEnviando] = useState(false);
+  const [state, action, enviando] = useActionState(
+    registrarNaoConforme,
+    ESTADO_INICIAL
+  );
 
-  async function submeter(formData: FormData) {
-    const observacao = String(formData.get("observacao") ?? "").trim();
-    const arquivo = formData.get("foto");
-
-    if (!observacao) return setErro("Descreva o problema.");
-    if (!(arquivo instanceof File) || arquivo.size === 0)
-      return setErro("Anexe a foto da nao conformidade.");
-
-    setErro(null);
-    setEnviando(true);
-    const falha = await aoSalvar(item, observacao, arquivo);
-    setEnviando(false);
-    if (falha) setErro(falha);
-    else aoFechar();
-  }
+  useEffect(() => {
+    if (state.ok) aoFechar();
+  }, [state, aoFechar]);
 
   return (
-    <div className="fixed inset-0 z-10 flex items-center justify-center bg-black/40 p-4">
-      <form
-        action={submeter}
-        className="flex w-full max-w-md flex-col gap-3 rounded-lg bg-white p-5"
-      >
-        <h2 className="text-sm font-semibold">
-          Nao conformidade —{" "}
-          <span className="font-mono text-neutral-500">{item.codigo}</span>
+    <div className="modal-fundo">
+      <form action={action} className="cartao w-full max-w-md p-5">
+        <p className="subtitulo">Nao conformidade</p>
+        <h2 className="titulo mt-1">
+          <span className="codigo">{item.codigo}</span>
         </h2>
-        <p className="text-sm text-neutral-600">{item.descricao}</p>
-        <textarea
-          name="observacao"
-          required
-          rows={3}
-          placeholder="Descricao do problema"
-          className={INPUT}
-        />
-        <input
-          name="foto"
-          type="file"
-          accept="image/*"
-          capture="environment"
-          required
-          className="text-sm"
-        />
-        {erro && <p className="text-xs text-red-600">{erro}</p>}
-        <div className="flex justify-end gap-2">
+        <p className="nota mt-2">{item.descricao}</p>
+
+        <input type="hidden" name="checklist_id" value={checklistId} />
+        <input type="hidden" name="item_id" value={item.id} />
+
+        <div className="mt-4">
+          <label className="rotulo" htmlFor="observacao">
+            Descricao do problema
+          </label>
+          <textarea
+            id="observacao"
+            name="observacao"
+            rows={3}
+            required
+            className="campo"
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="rotulo" htmlFor="foto">
+            Foto (obrigatoria)
+          </label>
+          <input
+            id="foto"
+            name="foto"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            required
+            className="campo"
+          />
+        </div>
+
+        {state.erro && <p className="erro mt-3">{state.erro}</p>}
+
+        <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
             onClick={aoFechar}
             disabled={enviando}
-            className={BOTAO_SEC}
+            className="botao botao-secundario"
           >
             Cancelar
           </button>
-          <button type="submit" disabled={enviando} className={BOTAO}>
-            {enviando ? "Salvando..." : "Salvar"}
+          <button type="submit" disabled={enviando} className="botao">
+            {enviando ? "Salvando" : "Salvar"}
           </button>
         </div>
       </form>

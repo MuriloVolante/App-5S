@@ -1,10 +1,19 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { requirePapel } from "@/lib/auth";
 import Header from "@/components/header";
-import type { Checklist, ChecklistItem, ChecklistResposta } from "@/types";
+import { requirePapel } from "@/lib/auth";
+import {
+  listarItens,
+  obterChecklist,
+  obterTemplate,
+  respostasDoChecklist,
+} from "@/lib/repo";
 import Execucao from "./execucao";
+
+const LINKS = [
+  { href: "/lider", rotulo: "Checklists" },
+  { href: "/lider/avaliacao", rotulo: "Acoes vencidas" },
+];
 
 export default async function ChecklistPage({
   params,
@@ -13,49 +22,31 @@ export default async function ChecklistPage({
 }) {
   const { id } = await params;
   const usuario = await requirePapel(["lider"]);
-  const supabase = await createClient();
 
-  const { data: checklist } = await supabase
-    .from("checklists")
-    .select(
-      "id, codigo, setor_id, lider_id, template_id, data_criacao, status, finalizado_em, checklist_templates (codigo, nome)"
-    )
-    .eq("id", id)
-    .single<Checklist & { checklist_templates: { codigo: string; nome: string } }>();
-
+  const checklist = obterChecklist(id);
   if (!checklist) notFound();
   if (checklist.lider_id !== usuario.id) redirect("/lider");
 
-  const [{ data: itensData }, { data: respostasData }] = await Promise.all([
-    supabase
-      .from("checklist_items")
-      .select("id, codigo, template_id, descricao, ordem, created_at")
-      .eq("template_id", checklist.template_id)
-      .order("ordem"),
-    supabase
-      .from("checklist_respostas")
-      .select("id, checklist_id, item_id, conforme, observacao, foto_url, created_at")
-      .eq("checklist_id", checklist.id),
-  ]);
-
-  const itens = (itensData ?? []) as ChecklistItem[];
-  const respostas = (respostasData ?? []) as ChecklistResposta[];
+  const template = obterTemplate(checklist.template_id);
+  const itens = listarItens(checklist.template_id);
+  const respostas = respostasDoChecklist(checklist.id);
 
   return (
     <>
-      <Header usuario={usuario} />
-      <main className="flex flex-col gap-6 p-6">
+      <Header usuario={usuario} links={LINKS} ativo="/lider" />
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 py-8">
         <div>
-          <Link href="/lider" className="text-sm text-neutral-500">
-            &larr; Home
+          <Link href="/lider" className="link-voltar">
+            &larr; Meus checklists
           </Link>
-          <h1 className="mt-1 text-lg font-semibold">
-            <span className="font-mono text-neutral-500">{checklist.codigo}</span>{" "}
-            {checklist.checklist_templates.nome}
+          <h1 className="titulo mt-2">
+            <span className="codigo">{checklist.codigo}</span> {template?.nome}
           </h1>
-          <p className="text-sm text-neutral-500">
-            Template {checklist.checklist_templates.codigo} — status{" "}
-            {checklist.status}
+          <p className="subtitulo mt-1">
+            {template?.codigo} ·{" "}
+            <span className={`selo selo-${checklist.status}`}>
+              {checklist.status}
+            </span>
           </p>
         </div>
 
@@ -68,36 +59,42 @@ export default async function ChecklistPage({
         ) : (
           <ul className="flex flex-col gap-2">
             {itens.map((item) => {
-              const resposta = respostas.find((r) => r.item_id === item.id);
+              const resposta = respostas.find((atual) => atual.item_id === item.id);
               return (
                 <li
                   key={item.id}
-                  className="rounded border border-neutral-200 bg-white px-4 py-3 text-sm"
+                  className={`cartao-plano item-linha flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
+                    resposta?.conforme ? "item-conforme" : "item-nao-conforme"
+                  }`}
                 >
-                  <span className="font-mono text-neutral-500">{item.codigo}</span>{" "}
-                  {item.descricao}{" "}
+                  <div className="min-w-[220px] flex-1">
+                    <p>
+                      <span className="codigo">{item.codigo}</span>{" "}
+                      {item.descricao}
+                    </p>
+                    {resposta && !resposta.conforme && (
+                      <p className="nota mt-1">
+                        {resposta.observacao} ·{" "}
+                        {resposta.foto_url && (
+                          <a
+                            href={resposta.foto_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline"
+                          >
+                            ver foto
+                          </a>
+                        )}
+                      </p>
+                    )}
+                  </div>
                   <span
-                    className={
-                      resposta?.conforme ? "text-green-700" : "text-red-600"
-                    }
+                    className={`selo ${
+                      resposta?.conforme ? "selo-conforme" : "selo-nao-conforme"
+                    }`}
                   >
                     {resposta?.conforme ? "Conforme" : "Nao conforme"}
                   </span>
-                  {resposta && !resposta.conforme && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {resposta.observacao}{" "}
-                      {resposta.foto_url && (
-                        <a
-                          href={resposta.foto_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="underline"
-                        >
-                          foto
-                        </a>
-                      )}
-                    </p>
-                  )}
                 </li>
               );
             })}

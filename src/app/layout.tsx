@@ -3,6 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Checklist de Conformidade",
+  description: "Checklists de conformidade por setor e acoes corretivas",
 };
 
 export default function RootLayout({
@@ -12,9 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-screen bg-neutral-50 text-neutral-900">
-        {children}
-      </body>
+      <body className="min-h-screen">{children}</body>
     </html>
   );
 }

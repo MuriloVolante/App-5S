@@ -1,8 +1,7 @@
-import Link from "next/link";
 import Header from "@/components/header";
 import { requirePapel } from "@/lib/auth";
 
-const ABAS = [
+const LINKS = [
   { href: "/admin/setores", rotulo: "Setores" },
   { href: "/admin/usuarios", rotulo: "Usuarios" },
   { href: "/admin/templates", rotulo: "Templates" },
@@ -18,15 +17,8 @@ export default async function AdminLayout({
 
   return (
     <>
-      <Header usuario={usuario} />
-      <nav className="flex gap-4 border-b border-neutral-200 bg-white px-6 py-3 text-sm">
-        {ABAS.map((aba) => (
-          <Link key={aba.href} href={aba.href} className="hover:underline">
-            {aba.rotulo}
-          </Link>
-        ))}
-      </nav>
-      <main className="p-6">{children}</main>
+      <Header usuario={usuario} links={LINKS} />
+      <main className="mx-auto w-full max-w-6xl px-5 py-8">{children}</main>
     </>
   );
 }

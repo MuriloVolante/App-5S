@@ -1,12 +1,11 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { criarSetor } from "./actions";
 import { ESTADO_INICIAL } from "@/lib/actions";
-import { BOTAO, INPUT } from "@/components/ui";
+import { criarSetor } from "./actions";
 
 export default function SetorForm() {
-  const [state, action, pending] = useActionState(criarSetor, ESTADO_INICIAL);
+  const [state, action, pendente] = useActionState(criarSetor, ESTADO_INICIAL);
   const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -14,19 +13,25 @@ export default function SetorForm() {
   }, [state]);
 
   return (
-    <form ref={ref} action={action} className="flex items-start gap-2">
-      <div className="flex flex-col gap-1">
-        <input
-          name="nome"
-          placeholder="Nome do setor"
-          required
-          className={`${INPUT} w-64`}
-        />
-        {state.erro && <span className="text-xs text-red-600">{state.erro}</span>}
+    <form ref={ref} action={action} className="cartao flex flex-col gap-3 p-4">
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="min-w-[260px] flex-1">
+          <label className="rotulo" htmlFor="nome-setor">
+            Novo setor
+          </label>
+          <input
+            id="nome-setor"
+            name="nome"
+            required
+            placeholder="Ex: Producao"
+            className="campo"
+          />
+        </div>
+        <button type="submit" disabled={pendente} className="botao">
+          Adicionar
+        </button>
       </div>
-      <button type="submit" disabled={pending} className={BOTAO}>
-        Adicionar
-      </button>
+      {state.erro && <p className="erro">{state.erro}</p>}
     </form>
   );
 }

@@ -1,103 +1,93 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { requirePapel } from "@/lib/auth";
-
-type Resultado = { erro: string | null };
+import { salvarFoto } from "@/lib/fotos";
+import * as repo from "@/lib/repo";
+import type { EstadoAcao } from "@/lib/actions";
+import type { Checklist } from "@/types";
 
 type Contexto =
-  | { ok: false; erro: string }
-  | {
-      ok: true;
-      supabase: Awaited<ReturnType<typeof createClient>>;
-      checklist: { id: string; template_id: string };
-    };
+  | { bloqueio: string }
+  | { bloqueio: null; checklist: Checklist };
 
-async function checklistDoLider(checklistId: string): Promise<Contexto> {
+async function checklistEditavel(checklistId: string): Promise<Contexto> {
   const usuario = await requirePapel(["lider"]);
-  const supabase = await createClient();
+  const checklist = repo.obterChecklist(checklistId);
 
-  const { data } = await supabase
-    .from("checklists")
-    .select("id, lider_id, status, template_id")
-    .eq("id", checklistId)
-    .single();
+  if (!checklist || checklist.lider_id !== usuario.id)
+    return { bloqueio: "Checklist invalido." };
+  if (checklist.status !== "aberto")
+    return { bloqueio: "Checklist ja finalizado." };
 
-  if (!data || data.lider_id !== usuario.id)
-    return { ok: false, erro: "Checklist invalido." };
-  if (data.status !== "aberto")
-    return { ok: false, erro: "Checklist ja finalizado." };
-
-  return { ok: true, supabase, checklist: data };
+  return { bloqueio: null, checklist };
 }
 
-export async function salvarResposta(entrada: {
-  checklistId: string;
-  itemId: string;
-  conforme: boolean;
-  observacao?: string;
-  fotoUrl?: string;
-}): Promise<Resultado> {
-  const { checklistId, itemId, conforme } = entrada;
-  const observacao = (entrada.observacao ?? "").trim();
-  const fotoUrl = (entrada.fotoUrl ?? "").trim();
-
+export async function marcarConforme(
+  _prev: EstadoAcao,
+  formData: FormData
+): Promise<EstadoAcao> {
+  const checklistId = String(formData.get("checklist_id") ?? "");
+  const itemId = String(formData.get("item_id") ?? "");
   if (!checklistId || !itemId) return { erro: "Resposta invalida." };
-  if (!conforme && (!observacao || !fotoUrl))
-    return { erro: "Nao conformidade exige descricao e foto." };
 
-  const ctx = await checklistDoLider(checklistId);
-  if (!ctx.ok) return { erro: ctx.erro };
+  const contexto = await checklistEditavel(checklistId);
+  if (contexto.bloqueio) return { erro: contexto.bloqueio };
 
-  const { error } = await ctx.supabase.from("checklist_respostas").upsert(
-    {
-      checklist_id: checklistId,
-      item_id: itemId,
-      conforme,
-      observacao: conforme ? null : observacao,
-      foto_url: conforme ? null : fotoUrl,
-    },
-    { onConflict: "checklist_id,item_id" }
-  );
-
-  if (error) return { erro: error.message };
+  const erro = repo.salvarResposta({ checklistId, itemId, conforme: true });
+  if (erro) return { erro };
 
   revalidatePath(`/lider/checklists/${checklistId}`);
-  return { erro: null };
+  return { erro: null, ok: true };
 }
 
-export async function finalizarChecklist(
-  checklistId: string
-): Promise<Resultado> {
+export async function registrarNaoConforme(
+  _prev: EstadoAcao,
+  formData: FormData
+): Promise<EstadoAcao> {
+  const checklistId = String(formData.get("checklist_id") ?? "");
+  const itemId = String(formData.get("item_id") ?? "");
+  const observacao = String(formData.get("observacao") ?? "").trim();
+  const foto = formData.get("foto");
+
+  if (!checklistId || !itemId) return { erro: "Resposta invalida." };
+  if (!observacao) return { erro: "Descreva o problema." };
+  if (!(foto instanceof File) || foto.size === 0)
+    return { erro: "Anexe a foto da nao conformidade." };
+  if (!foto.type.startsWith("image/"))
+    return { erro: "O anexo precisa ser uma imagem." };
+
+  const contexto = await checklistEditavel(checklistId);
+  if (contexto.bloqueio) return { erro: contexto.bloqueio };
+
+  const fotoUrl = await salvarFoto(foto, checklistId);
+  const erro = repo.salvarResposta({
+    checklistId,
+    itemId,
+    conforme: false,
+    observacao,
+    fotoUrl,
+  });
+  if (erro) return { erro };
+
+  revalidatePath(`/lider/checklists/${checklistId}`);
+  return { erro: null, ok: true };
+}
+
+export async function finalizar(
+  _prev: EstadoAcao,
+  formData: FormData
+): Promise<EstadoAcao> {
+  const checklistId = String(formData.get("checklist_id") ?? "");
   if (!checklistId) return { erro: "Checklist invalido." };
 
-  const ctx = await checklistDoLider(checklistId);
-  if (!ctx.ok) return { erro: ctx.erro };
+  const contexto = await checklistEditavel(checklistId);
+  if (contexto.bloqueio) return { erro: contexto.bloqueio };
 
-  const [{ count: totalItens }, { count: totalRespostas }] = await Promise.all([
-    ctx.supabase
-      .from("checklist_items")
-      .select("id", { count: "exact", head: true })
-      .eq("template_id", ctx.checklist.template_id),
-    ctx.supabase
-      .from("checklist_respostas")
-      .select("id", { count: "exact", head: true })
-      .eq("checklist_id", checklistId),
-  ]);
-
-  if ((totalItens ?? 0) === 0) return { erro: "Template sem itens." };
-  if ((totalRespostas ?? 0) < (totalItens ?? 0))
-    return { erro: "Responda todos os itens antes de finalizar." };
-
-  const { error } = await ctx.supabase
-    .from("checklists")
-    .update({ status: "finalizado", finalizado_em: new Date().toISOString() })
-    .eq("id", checklistId);
-
-  if (error) return { erro: error.message };
+  const erro = repo.finalizarChecklist(checklistId);
+  if (erro) return { erro };
 
   revalidatePath(`/lider/checklists/${checklistId}`);
   revalidatePath("/lider");
-  return { erro: null };
+  return { erro: null, ok: true };
 }

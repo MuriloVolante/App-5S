@@ -1,37 +1,36 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { requirePapel } from "@/lib/auth";
+import * as repo from "@/lib/repo";
 import type { EstadoAcao } from "@/lib/actions";
 
-async function avaliar(
-  rpc: "concluir_acao" | "resetar_acao",
+export async function concluir(
+  _prev: EstadoAcao,
   formData: FormData
 ): Promise<EstadoAcao> {
+  const usuario = await requirePapel(["lider"]);
   const id = String(formData.get("id") ?? "");
   if (!id) return { erro: "Acao invalida." };
 
-  await requirePapel(["lider"]);
-  const supabase = await createClient();
-
-  const { error } = await supabase.rpc(rpc, { acao_id: id });
-  if (error) return { erro: error.message };
+  const erro = repo.concluirAcao(id, usuario);
+  if (erro) return { erro };
 
   revalidatePath("/lider/avaliacao");
   return { erro: null, ok: true };
 }
 
-export async function concluirAcao(
+export async function resetar(
   _prev: EstadoAcao,
   formData: FormData
 ): Promise<EstadoAcao> {
-  return avaliar("concluir_acao", formData);
-}
+  const usuario = await requirePapel(["lider"]);
+  const id = String(formData.get("id") ?? "");
+  if (!id) return { erro: "Acao invalida." };
 
-export async function resetarAcao(
-  _prev: EstadoAcao,
-  formData: FormData
-): Promise<EstadoAcao> {
-  return avaliar("resetar_acao", formData);
+  const erro = repo.resetarAcao(id, usuario);
+  if (erro) return { erro };
+
+  revalidatePath("/lider/avaliacao");
+  return { erro: null, ok: true };
 }

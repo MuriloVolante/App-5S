@@ -1,28 +1,51 @@
-import type { AppUser } from "@/types";
+import Link from "next/link";
+import Marca from "@/components/marca";
+import { ROTULO_PAPEL, type AppUser } from "@/types";
 
-const ROTULO_PAPEL = {
-  admin: "Admin",
-  coordenador: "Coordenador",
-  lider: "Lider",
-} as const;
+export type LinkNav = { href: string; rotulo: string };
 
-export default function Header({ usuario }: { usuario: AppUser }) {
+export default function Header({
+  usuario,
+  links = [],
+  ativo,
+}: {
+  usuario: AppUser;
+  links?: LinkNav[];
+  ativo?: string;
+}) {
   return (
-    <header className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
-      <div className="text-sm">
-        <span className="font-medium">{usuario.nome}</span>{" "}
-        <span className="text-neutral-500">
-          ({usuario.codigo} &middot; {ROTULO_PAPEL[usuario.papel]})
-        </span>
+    <header className="border-b-2 border-[var(--tinta)] bg-[var(--papel-claro)]">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4">
+        <Marca compacta />
+
+        <nav className="flex flex-wrap items-center gap-1">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`link-nav ${ativo === link.href ? "link-nav-ativo" : ""}`}
+            >
+              {link.rotulo}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-3">
+          <span className="text-right">
+            <span className="block text-[12px] font-bold">{usuario.nome}</span>
+            <span className="marca-sub">
+              {usuario.codigo} ·{" "}
+              {usuario.papel ? ROTULO_PAPEL[usuario.papel] : "Sem papel"}
+            </span>
+          </span>
+          <form action="/logout" method="post">
+            <button type="submit" className="botao botao-secundario botao-mini">
+              Sair
+            </button>
+          </form>
+        </div>
       </div>
-      <form action="/auth/signout" method="post">
-        <button
-          type="submit"
-          className="rounded border border-neutral-300 px-3 py-1.5 text-sm"
-        >
-          Sair
-        </button>
-      </form>
+      <div className="faixa-laranja" />
     </header>
   );
 }

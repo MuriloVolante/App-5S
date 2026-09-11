@@ -1,13 +1,12 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { criarTemplate } from "./actions";
 import { ESTADO_INICIAL } from "@/lib/actions";
-import { BOTAO, INPUT } from "@/components/ui";
 import type { Setor } from "@/types";
+import { criarTemplate } from "./actions";
 
 export default function TemplateForm({ setores }: { setores: Setor[] }) {
-  const [state, action, pending] = useActionState(criarTemplate, ESTADO_INICIAL);
+  const [state, action, pendente] = useActionState(criarTemplate, ESTADO_INICIAL);
   const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -15,29 +14,39 @@ export default function TemplateForm({ setores }: { setores: Setor[] }) {
   }, [state]);
 
   return (
-    <form ref={ref} action={action} className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          name="nome"
-          placeholder="Nome do template"
-          required
-          className={`${INPUT} w-64`}
-        />
-        <select name="setor_id" required defaultValue="" className={INPUT}>
-          <option value="" disabled>
-            Setor
-          </option>
-          {setores.map((setor) => (
-            <option key={setor.id} value={setor.id}>
-              {setor.codigo} — {setor.nome}
+    <form ref={ref} action={action} className="cartao flex flex-col gap-3 p-4">
+      <p className="subtitulo">Novo template</p>
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="min-w-[240px] flex-1">
+          <label className="rotulo">Nome</label>
+          <input
+            name="nome"
+            required
+            placeholder="Ex: Inspecao diaria"
+            className="campo"
+          />
+        </div>
+        <div className="min-w-[200px]">
+          <label className="rotulo">Setor</label>
+          <select name="setor_id" required defaultValue="" className="campo">
+            <option value="" disabled>
+              Selecione
             </option>
-          ))}
-        </select>
-        <button type="submit" disabled={pending} className={BOTAO}>
+            {setores.map((setor) => (
+              <option key={setor.id} value={setor.id}>
+                {setor.codigo} · {setor.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button type="submit" disabled={pendente} className="botao">
           Adicionar
         </button>
       </div>
-      {state.erro && <p className="text-xs text-red-600">{state.erro}</p>}
+      {state.erro && <p className="erro">{state.erro}</p>}
+      {setores.length === 0 && (
+        <p className="nota">Cadastre um setor antes de criar templates.</p>
+      )}
     </form>
   );
 }

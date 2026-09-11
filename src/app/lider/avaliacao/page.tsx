@@ -1,46 +1,37 @@
-import Link from "next/link";
 import Header from "@/components/header";
 import { requirePapel } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
-import { aplicarVencimentos } from "@/lib/vencimentos";
-import { TABELA, TH } from "@/components/ui";
-import type { Acao } from "@/types";
+import { listarAcoesVencidas } from "@/lib/repo";
 import AcaoVencida from "./acao-vencida";
+
+const LINKS = [
+  { href: "/lider", rotulo: "Checklists" },
+  { href: "/lider/avaliacao", rotulo: "Acoes vencidas" },
+];
 
 export default async function AvaliacaoPage() {
   const usuario = await requirePapel(["lider"]);
-  await aplicarVencimentos();
-
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("acoes")
-    .select(
-      "id, codigo, resposta_id, setor_id, descricao_problema, foto_url, aberto_por, aberto_em, prazo, status, reset_count, concluido_em, concluido_por"
-    )
-    .eq("setor_id", usuario.setor_id!)
-    .eq("status", "vencida")
-    .order("prazo");
-
-  const acoes = (data ?? []) as Acao[];
+  const acoes = listarAcoesVencidas(usuario.setor_id!);
 
   return (
     <>
-      <Header usuario={usuario} />
-      <main className="flex flex-col gap-6 p-6">
+      <Header usuario={usuario} links={LINKS} ativo="/lider/avaliacao" />
+      <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 py-8">
         <div>
-          <Link href="/lider" className="text-sm text-neutral-500">
-            &larr; Home
-          </Link>
-          <h1 className="mt-1 text-lg font-semibold">Acoes vencidas</h1>
+          <h1 className="titulo">Avaliacao de acoes vencidas</h1>
+          <p className="subtitulo mt-1">
+            Concluir encerra a acao · Resetar devolve para o coordenador definir
+            novo prazo
+          </p>
         </div>
-        <table className={TABELA}>
+
+        <table className="tabela">
           <thead>
             <tr>
-              <th className={TH}>Codigo</th>
-              <th className={TH}>Problema</th>
-              <th className={TH}>Prazo original</th>
-              <th className={TH}>Resets</th>
-              <th className={TH} />
+              <th className="w-32">Codigo</th>
+              <th>Problema</th>
+              <th className="w-40">Prazo original</th>
+              <th className="w-24">Resets</th>
+              <th />
             </tr>
           </thead>
           <tbody>
@@ -49,8 +40,8 @@ export default async function AvaliacaoPage() {
             ))}
             {acoes.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-3 py-4 text-sm text-neutral-500">
-                  Nenhuma acao vencida.
+                <td colSpan={5} className="vazio">
+                  Nenhuma acao vencida
                 </td>
               </tr>
             )}

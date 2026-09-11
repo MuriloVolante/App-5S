@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { atualizarTemplate, excluirTemplate } from "./actions";
 import { ESTADO_INICIAL } from "@/lib/actions";
-import { BOTAO_SEC, INPUT, TD } from "@/components/ui";
 import type { ChecklistTemplate, Setor } from "@/types";
+import { atualizarTemplate, excluirTemplate } from "./actions";
 
 export default function TemplateLinha({
   template,
@@ -16,63 +15,72 @@ export default function TemplateLinha({
   setores: Setor[];
   totalItens: number;
 }) {
-  const [salvar, acaoSalvar, salvando] = useActionState(
+  const [salvo, salvar, salvando] = useActionState(
     atualizarTemplate,
     ESTADO_INICIAL
   );
-  const [excluir, acaoExcluir, excluindo] = useActionState(
+  const [removido, remover, removendo] = useActionState(
     excluirTemplate,
     ESTADO_INICIAL
   );
-  const erro = salvar.erro ?? excluir.erro;
+  const erro = salvo.erro ?? removido.erro;
   const formId = `template-${template.id}`;
 
   return (
     <tr>
-      <td className={`${TD} font-mono text-neutral-500`}>{template.codigo}</td>
-      <td className={TD}>
-        <form action={acaoSalvar} id={formId} className="flex flex-wrap gap-2">
+      <td className="codigo align-top">{template.codigo}</td>
+      <td>
+        <form action={salvar} id={formId} className="flex flex-wrap gap-3">
           <input type="hidden" name="id" value={template.id} />
-          <input
-            name="nome"
-            defaultValue={template.nome}
-            required
-            className={`${INPUT} w-64`}
-          />
-          <select
-            name="setor_id"
-            defaultValue={template.setor_id}
-            className={INPUT}
-          >
-            {setores.map((setor) => (
-              <option key={setor.id} value={setor.id}>
-                {setor.codigo} — {setor.nome}
-              </option>
-            ))}
-          </select>
+          <div className="min-w-[200px] flex-1">
+            <label className="rotulo">Nome</label>
+            <input
+              name="nome"
+              defaultValue={template.nome}
+              required
+              className="campo"
+            />
+          </div>
+          <div className="min-w-[190px]">
+            <label className="rotulo">Setor</label>
+            <select
+              name="setor_id"
+              defaultValue={template.setor_id}
+              className="campo"
+            >
+              {setores.map((setor) => (
+                <option key={setor.id} value={setor.id}>
+                  {setor.codigo} · {setor.nome}
+                </option>
+              ))}
+            </select>
+          </div>
         </form>
-        {erro && <p className="mt-1 text-xs text-red-600">{erro}</p>}
+        {erro && <p className="erro mt-1">{erro}</p>}
       </td>
-      <td className={`${TD} text-neutral-500`}>{totalItens}</td>
-      <td className={TD}>
-        <div className="flex gap-2">
+      <td className="align-top">{totalItens}</td>
+      <td className="align-top">
+        <div className="flex justify-end gap-2">
           <button
             type="submit"
             form={formId}
             disabled={salvando}
-            className={BOTAO_SEC}
+            className="botao botao-secundario botao-mini"
           >
             Salvar
           </button>
-          <Link href={`/admin/templates/${template.id}`} className={BOTAO_SEC}>
+          <Link
+            href={`/admin/templates/${template.id}`}
+            className="botao botao-laranja botao-mini"
+          >
             Itens
           </Link>
-          <form action={acaoExcluir}>
+          <form action={remover}>
             <input type="hidden" name="id" value={template.id} />
             <button
               type="submit"
-              disabled={excluindo}
-              className={`${BOTAO_SEC} text-red-600`}
+              disabled={removendo}
+              className="botao botao-perigo botao-mini"
             >
               Excluir
             </button>

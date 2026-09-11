@@ -1,63 +1,55 @@
 import Link from "next/link";
 import Header from "@/components/header";
 import { requirePapel } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
-import type { Checklist, ChecklistTemplate } from "@/types";
+import {
+  listarAcoesVencidas,
+  listarChecklistsDoLider,
+  listarTemplatesDoSetor,
+} from "@/lib/repo";
 import CriarChecklist from "./criar-checklist";
+
+const LINKS = [
+  { href: "/lider", rotulo: "Checklists" },
+  { href: "/lider/avaliacao", rotulo: "Acoes vencidas" },
+];
 
 export default async function LiderPage() {
   const usuario = await requirePapel(["lider"]);
-  const supabase = await createClient();
-
-  const [{ data: templatesData }, { data: checklistsData }] = await Promise.all([
-    supabase
-      .from("checklist_templates")
-      .select("id, codigo, setor_id, nome, created_at")
-      .eq("setor_id", usuario.setor_id!)
-      .order("codigo"),
-    supabase
-      .from("checklists")
-      .select(
-        "id, codigo, setor_id, lider_id, template_id, data_criacao, status, finalizado_em"
-      )
-      .eq("lider_id", usuario.id)
-      .order("data_criacao", { ascending: false })
-      .limit(20),
-  ]);
-
-  const templates = (templatesData ?? []) as ChecklistTemplate[];
-  const checklists = (checklistsData ?? []) as Checklist[];
+  const templates = listarTemplatesDoSetor(usuario.setor_id!);
+  const checklists = listarChecklistsDoLider(usuario.id);
+  const vencidas = listarAcoesVencidas(usuario.setor_id!).length;
 
   return (
     <>
-      <Header usuario={usuario} />
-      <main className="flex flex-col gap-8 p-6">
-        <div>
+      <Header usuario={usuario} links={LINKS} ativo="/lider" />
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 py-8">
+        {vencidas > 0 && (
           <Link
             href="/lider/avaliacao"
-            className="text-sm text-neutral-600 underline"
+            className="cartao flex items-center justify-between px-4 py-3"
           >
-            Avaliacao de acoes vencidas
+            <span className="subtitulo">
+              {vencidas} acao(oes) vencida(s) aguardando avaliacao
+            </span>
+            <span className="botao botao-laranja botao-mini">Avaliar</span>
           </Link>
-        </div>
+        )}
 
         <section className="flex flex-col gap-3">
-          <h1 className="text-lg font-semibold">Templates do meu setor</h1>
+          <h1 className="titulo">Templates do meu setor</h1>
           {templates.length === 0 && (
-            <p className="text-sm text-neutral-500">
-              Nenhum template cadastrado para o seu setor.
+            <p className="nota">
+              Nenhum template cadastrado para o seu setor. Peca ao administrador.
             </p>
           )}
           <ul className="flex flex-col gap-2">
             {templates.map((template) => (
               <li
                 key={template.id}
-                className="flex items-center justify-between rounded border border-neutral-200 bg-white px-4 py-3 text-sm"
+                className="cartao-plano flex flex-wrap items-center justify-between gap-3 px-4 py-3"
               >
                 <span>
-                  <span className="font-mono text-neutral-500">
-                    {template.codigo}
-                  </span>{" "}
+                  <span className="codigo">{template.codigo}</span>{" "}
                   {template.nome}
                 </span>
                 <CriarChecklist templateId={template.id} />
@@ -67,36 +59,42 @@ export default async function LiderPage() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">Meus checklists</h2>
-          {checklists.length === 0 && (
-            <p className="text-sm text-neutral-500">Nenhum checklist criado.</p>
+          <h2 className="titulo">Meus checklists</h2>
+          {checklists.length === 0 ? (
+            <p className="nota">Nenhum checklist criado ate agora.</p>
+          ) : (
+            <table className="tabela">
+              <thead>
+                <tr>
+                  <th className="w-32">Codigo</th>
+                  <th>Criado em</th>
+                  <th className="w-40">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {checklists.map((checklist) => (
+                  <tr key={checklist.id}>
+                    <td>
+                      <Link
+                        href={`/lider/checklists/${checklist.id}`}
+                        className="codigo underline"
+                      >
+                        {checklist.codigo}
+                      </Link>
+                    </td>
+                    <td>
+                      {new Date(checklist.data_criacao).toLocaleString("pt-BR")}
+                    </td>
+                    <td>
+                      <span className={`selo selo-${checklist.status}`}>
+                        {checklist.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
-          <ul className="flex flex-col gap-2">
-            {checklists.map((checklist) => (
-              <li key={checklist.id}>
-                <Link
-                  href={`/lider/checklists/${checklist.id}`}
-                  className="flex items-center justify-between rounded border border-neutral-200 bg-white px-4 py-3 text-sm hover:border-neutral-400"
-                >
-                  <span className="font-mono text-neutral-500">
-                    {checklist.codigo}
-                  </span>
-                  <span className="text-neutral-500">
-                    {new Date(checklist.data_criacao).toLocaleString("pt-BR")}
-                  </span>
-                  <span
-                    className={
-                      checklist.status === "aberto"
-                        ? "text-amber-700"
-                        : "text-green-700"
-                    }
-                  >
-                    {checklist.status}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
         </section>
       </main>
     </>

@@ -1,51 +1,53 @@
 "use client";
 
 import { useActionState } from "react";
-import { concluirAcao, resetarAcao } from "./actions";
 import { ESTADO_INICIAL } from "@/lib/actions";
-import { BOTAO_SEC, TD } from "@/components/ui";
 import type { Acao } from "@/types";
+import { concluir, resetar } from "./actions";
 
 export default function AcaoVencida({ acao }: { acao: Acao }) {
-  const [concluir, acaoConcluir, concluindo] = useActionState(
-    concluirAcao,
+  const [concluido, acaoConcluir, concluindo] = useActionState(
+    concluir,
     ESTADO_INICIAL
   );
-  const [resetar, acaoResetar, resetando] = useActionState(
-    resetarAcao,
+  const [resetado, acaoResetar, resetando] = useActionState(
+    resetar,
     ESTADO_INICIAL
   );
-  const erro = concluir.erro ?? resetar.erro;
+  const erro = concluido.erro ?? resetado.erro;
+  const ocupado = concluindo || resetando;
 
   return (
     <tr>
-      <td className={`${TD} font-mono text-neutral-500`}>{acao.codigo}</td>
-      <td className={TD}>
-        {acao.descricao_problema}{" "}
-        <a
-          href={acao.foto_url}
-          target="_blank"
-          rel="noreferrer"
-          className="text-xs underline"
-        >
-          foto
-        </a>
-        {erro && <p className="mt-1 text-xs text-red-600">{erro}</p>}
+      <td className="codigo align-top">{acao.codigo}</td>
+      <td>
+        {acao.descricao_problema}
+        <p className="nota mt-1">
+          <a
+            href={acao.foto_url}
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            ver foto
+          </a>
+        </p>
+        {erro && <p className="erro mt-1">{erro}</p>}
       </td>
-      <td className={TD}>
+      <td className="align-top">
         {acao.prazo
           ? new Date(`${acao.prazo}T00:00:00`).toLocaleDateString("pt-BR")
           : "—"}
       </td>
-      <td className={`${TD} text-neutral-500`}>{acao.reset_count}</td>
-      <td className={TD}>
-        <div className="flex gap-2">
+      <td className="align-top">{acao.reset_count}</td>
+      <td className="align-top">
+        <div className="flex justify-end gap-2">
           <form action={acaoConcluir}>
             <input type="hidden" name="id" value={acao.id} />
             <button
               type="submit"
-              disabled={concluindo || resetando}
-              className={`${BOTAO_SEC} text-green-700`}
+              disabled={ocupado}
+              className="botao botao-mini"
             >
               Concluir
             </button>
@@ -54,8 +56,8 @@ export default function AcaoVencida({ acao }: { acao: Acao }) {
             <input type="hidden" name="id" value={acao.id} />
             <button
               type="submit"
-              disabled={concluindo || resetando}
-              className={`${BOTAO_SEC} text-red-600`}
+              disabled={ocupado}
+              className="botao botao-perigo botao-mini"
             >
               Resetar
             </button>

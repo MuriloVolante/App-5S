@@ -1,46 +1,56 @@
 "use client";
 
 import { useActionState } from "react";
-import { definirPrazo } from "./actions";
 import { ESTADO_INICIAL } from "@/lib/actions";
-import { BOTAO_SEC, INPUT, TD } from "@/components/ui";
-import type { Acao } from "@/types";
+import { ROTULO_STATUS_ACAO, type Acao } from "@/types";
+import { definirPrazo } from "./actions";
 
 export default function AcaoLinha({ acao }: { acao: Acao }) {
-  const [state, action, pending] = useActionState(definirPrazo, ESTADO_INICIAL);
+  const [state, action, pendente] = useActionState(definirPrazo, ESTADO_INICIAL);
 
   return (
     <tr>
-      <td className={`${TD} font-mono text-neutral-500`}>{acao.codigo}</td>
-      <td className={TD}>
-        {acao.descricao_problema}{" "}
-        <a
-          href={acao.foto_url}
-          target="_blank"
-          rel="noreferrer"
-          className="text-xs underline"
-        >
-          foto
-        </a>
-        {state.erro && <p className="mt-1 text-xs text-red-600">{state.erro}</p>}
+      <td className="codigo align-top">{acao.codigo}</td>
+      <td>
+        {acao.descricao_problema}
+        <p className="nota mt-1">
+          <a
+            href={acao.foto_url}
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            ver foto
+          </a>{" "}
+          · aberta em{" "}
+          {new Date(acao.aberto_em).toLocaleDateString("pt-BR")}
+        </p>
+        {state.erro && <p className="erro mt-1">{state.erro}</p>}
       </td>
-      <td className={TD}>{acao.status}</td>
-      <td className={TD}>
+      <td className="align-top">
+        <span className={`selo selo-${acao.status}`}>
+          {ROTULO_STATUS_ACAO[acao.status]}
+        </span>
+      </td>
+      <td className="align-top">
         {acao.status === "aberta" ? (
-          <form action={action} className="flex gap-2">
+          <form action={action} className="flex flex-wrap items-end gap-2">
             <input type="hidden" name="id" value={acao.id} />
-            <input type="date" name="prazo" required className={INPUT} />
-            <button type="submit" disabled={pending} className={BOTAO_SEC}>
-              Definir prazo
+            <div>
+              <label className="rotulo">Prazo</label>
+              <input type="date" name="prazo" required className="campo" />
+            </div>
+            <button type="submit" disabled={pendente} className="botao botao-mini">
+              Definir
             </button>
           </form>
+        ) : acao.prazo ? (
+          new Date(`${acao.prazo}T00:00:00`).toLocaleDateString("pt-BR")
         ) : (
-          <span className="text-neutral-600">
-            {acao.prazo ? new Date(`${acao.prazo}T00:00:00`).toLocaleDateString("pt-BR") : "—"}
-          </span>
+          "—"
         )}
       </td>
-      <td className={`${TD} text-neutral-500`}>{acao.reset_count}</td>
+      <td className="align-top">{acao.reset_count}</td>
     </tr>
   );
 }

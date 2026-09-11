@@ -1,11 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
-import { atualizarUsuario, excluirUsuario } from "./actions";
 import { ESTADO_INICIAL } from "@/lib/actions";
-import { BOTAO_SEC, INPUT, TD } from "@/components/ui";
 import type { AppUser, Setor } from "@/types";
 import CamposPapelSetor from "./campos-papel-setor";
+import { atualizarUsuario, excluirUsuario } from "./actions";
 
 export default function UsuarioLinha({
   usuario,
@@ -14,54 +13,57 @@ export default function UsuarioLinha({
   usuario: AppUser;
   setores: Setor[];
 }) {
-  const [salvar, acaoSalvar, salvando] = useActionState(
+  const [salvo, salvar, salvando] = useActionState(
     atualizarUsuario,
     ESTADO_INICIAL
   );
-  const [excluir, acaoExcluir, excluindo] = useActionState(
+  const [removido, remover, removendo] = useActionState(
     excluirUsuario,
     ESTADO_INICIAL
   );
-  const erro = salvar.erro ?? excluir.erro;
+  const erro = salvo.erro ?? removido.erro;
   const formId = `usuario-${usuario.id}`;
 
   return (
     <tr>
-      <td className={`${TD} font-mono text-neutral-500`}>{usuario.codigo}</td>
-      <td className={TD}>
-        <form action={acaoSalvar} id={formId} className="flex flex-wrap gap-2">
+      <td className="codigo align-top">{usuario.codigo}</td>
+      <td>
+        <form action={salvar} id={formId} className="flex flex-wrap gap-3">
           <input type="hidden" name="id" value={usuario.id} />
-          <input
-            name="nome"
-            defaultValue={usuario.nome}
-            required
-            className={`${INPUT} w-44`}
-          />
+          <div className="min-w-[160px] flex-1">
+            <label className="rotulo">Nome</label>
+            <input
+              name="nome"
+              defaultValue={usuario.nome}
+              required
+              className="campo"
+            />
+          </div>
           <CamposPapelSetor
             setores={setores}
             papelInicial={usuario.papel}
             setorInicial={usuario.setor_id ?? ""}
           />
         </form>
-        {erro && <p className="mt-1 text-xs text-red-600">{erro}</p>}
+        {erro && <p className="erro mt-1">{erro}</p>}
       </td>
-      <td className={`${TD} text-neutral-500`}>{usuario.email}</td>
-      <td className={TD}>
-        <div className="flex gap-2">
+      <td className="align-top text-[11px]">{usuario.email}</td>
+      <td className="align-top">
+        <div className="flex justify-end gap-2">
           <button
             type="submit"
             form={formId}
             disabled={salvando}
-            className={BOTAO_SEC}
+            className="botao botao-secundario botao-mini"
           >
             Salvar
           </button>
-          <form action={acaoExcluir}>
+          <form action={remover}>
             <input type="hidden" name="id" value={usuario.id} />
             <button
               type="submit"
-              disabled={excluindo}
-              className={`${BOTAO_SEC} text-red-600`}
+              disabled={removendo}
+              className="botao botao-perigo botao-mini"
             >
               Excluir
             </button>

@@ -1,26 +1,20 @@
 export type Papel = "lider" | "coordenador" | "admin";
 
-export type Setor = {
-  id: string;
-  codigo: string;
-  nome: string;
-  created_at: string;
-};
-
 export type AppUser = {
   id: string;
   codigo: string;
   nome: string;
   email: string;
-  papel: Papel;
+  papel: Papel | null;
   setor_id: string | null;
-  created_at: string;
+  criado_em: string;
 };
 
-export const HOME_POR_PAPEL: Record<Papel, string> = {
-  admin: "/admin",
-  coordenador: "/coordenador",
-  lider: "/lider",
+export type Setor = {
+  id: string;
+  codigo: string;
+  nome: string;
+  criado_em: string;
 };
 
 export type ChecklistTemplate = {
@@ -28,7 +22,7 @@ export type ChecklistTemplate = {
   codigo: string;
   setor_id: string;
   nome: string;
-  created_at: string;
+  criado_em: string;
 };
 
 export type ChecklistItem = {
@@ -37,7 +31,7 @@ export type ChecklistItem = {
   template_id: string;
   descricao: string;
   ordem: number;
-  created_at: string;
+  criado_em: string;
 };
 
 export type StatusChecklist = "aberto" | "finalizado";
@@ -57,10 +51,10 @@ export type ChecklistResposta = {
   id: string;
   checklist_id: string;
   item_id: string;
-  conforme: boolean;
+  conforme: number;
   observacao: string | null;
   foto_url: string | null;
-  created_at: string;
+  criado_em: string;
 };
 
 export type StatusAcao = "aberta" | "com_prazo" | "vencida" | "concluida";
@@ -79,4 +73,23 @@ export type Acao = {
   reset_count: number;
   concluido_em: string | null;
   concluido_por: string | null;
+};
+
+export const HOME_POR_PAPEL: Record<Papel, string> = {
+  admin: "/admin/setores",
+  coordenador: "/coordenador",
+  lider: "/lider",
+};
+
+export const ROTULO_PAPEL: Record<Papel, string> = {
+  admin: "Admin",
+  coordenador: "Coordenador",
+  lider: "Lider",
+};
+
+export const ROTULO_STATUS_ACAO: Record<StatusAcao, string> = {
+  aberta: "Aberta",
+  com_prazo: "Com prazo",
+  vencida: "Vencida",
+  concluida: "Concluida",
 };
