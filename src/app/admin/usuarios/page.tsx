@@ -10,7 +10,7 @@ export default function UsuariosPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="titulo">Usuarios</h1>
+        <h1 className="titulo">Usuários</h1>
         <p className="subtitulo mt-1">
           {usuarios.length} cadastrados · {pendentes} sem papel
         </p>
@@ -18,10 +18,11 @@ export default function UsuariosPage() {
 
       <UsuarioForm setores={setores} />
 
-      <table className="tabela">
+      <div className="tabela-rolagem">
+        <table className="tabela">
         <thead>
           <tr>
-            <th className="w-32">Codigo</th>
+            <th className="w-32">Código</th>
             <th>Nome / papel / setor</th>
             <th>E-mail</th>
             <th />
@@ -40,6 +41,7 @@ export default function UsuariosPage() {
           )}
         </tbody>
       </table>
+        </div>
     </div>
   );
 }

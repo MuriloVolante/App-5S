@@ -65,7 +65,10 @@ Todas as entidades têm código sequencial legível — `SET-0001`, `USR-0001`, 
 - Next.js 16 (App Router) + React 19 + TypeScript
 - SQLite pelo módulo nativo do Node (`node:sqlite`) — arquivo local, sem dependência nativa para compilar
 - Autenticação própria: senha com `scrypt`, sessão em cookie httpOnly
-- Fotos gravadas em `data/uploads` e servidas por `/api/fotos/...`
+- Fotos gravadas em `data/uploads` e servidas por `/api/fotos/...`, exibidas como
+  miniatura com ampliação em modal
+- Telas do líder pensadas para o celular (cartões empilhados, botões de largura total,
+  câmera direto no campo de foto)
 
 Estrutura:
 

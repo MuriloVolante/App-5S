@@ -177,38 +177,38 @@ function semearDemo(db: DatabaseSync) {
     });
   };
 
-  const producao = inserirSetor("Producao");
-  const manutencao = inserirSetor("Manutencao");
+  const producao = inserirSetor("Produção");
+  const manutencao = inserirSetor("Manutenção");
 
   inserirUsuario("Admin Demo", "admin@demo.local", "admin", null);
-  inserirUsuario("Lider Producao", "lider@demo.local", "lider", producao);
-  inserirUsuario("Coord Producao", "coord@demo.local", "coordenador", producao);
-  inserirUsuario("Lider Manutencao", "lider2@demo.local", "lider", manutencao);
+  inserirUsuario("Líder Produção", "lider@demo.local", "lider", producao);
+  inserirUsuario("Coord Produção", "coord@demo.local", "coordenador", producao);
+  inserirUsuario("Líder Manutenção", "lider2@demo.local", "lider", manutencao);
   inserirUsuario(
-    "Coord Manutencao",
+    "Coord Manutenção",
     "coord2@demo.local",
     "coordenador",
     manutencao
   );
 
-  inserirTemplate("Inspecao diaria de seguranca", producao, [
-    "Extintores desobstruidos e no prazo",
+  inserirTemplate("Inspeção diária de segurança", producao, [
+    "Extintores desobstruídos e no prazo",
     "Rotas de fuga livres",
     "EPIs em uso pela equipe",
     "Piso limpo e sem vazamentos",
-    "Ferramentas guardadas apos o uso",
+    "Ferramentas guardadas após o uso",
   ]);
 
-  inserirTemplate("Checklist 5S da area", producao, [
-    "Bancadas sem itens desnecessarios",
-    "Identificacao visual dos armarios",
+  inserirTemplate("Checklist 5S da área", producao, [
+    "Bancadas sem itens desnecessários",
+    "Identificação visual dos armários",
     "Lixeiras segregadas corretamente",
   ]);
 
-  inserirTemplate("Inspecao de manutencao preventiva", manutencao, [
-    "Lubrificacao das maquinas registrada",
-    "Paineis eletricos fechados",
-    "Ordens de servico do dia atualizadas",
+  inserirTemplate("Inspeção de manutenção preventiva", manutencao, [
+    "Lubrificação das máquinas registrada",
+    "Painéis elétricos fechados",
+    "Ordens de serviço do dia atualizadas",
   ]);
 
   console.log(

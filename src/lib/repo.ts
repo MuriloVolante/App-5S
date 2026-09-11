@@ -38,7 +38,7 @@ export function excluirSetor(id: string) {
     )
     .get({ id }) as { usuarios: number; templates: number };
 
-  if (vinculos.usuarios > 0) return "Setor possui usuarios vinculados.";
+  if (vinculos.usuarios > 0) return "Setor possui usuários vinculados.";
   if (vinculos.templates > 0) return "Setor possui templates vinculados.";
 
   conectar().prepare("delete from setores where id = ?").run(id);
@@ -75,7 +75,7 @@ export function criarUsuario(entrada: {
   papel: Papel | null;
   setorId: string | null;
 }) {
-  if (buscarUsuarioPorEmail(entrada.email)) return "Email ja cadastrado.";
+  if (buscarUsuarioPorEmail(entrada.email)) return "E-mail já cadastrado.";
 
   const id = novoId();
   conectar().prepare(
@@ -114,7 +114,7 @@ export function excluirUsuario(id: string) {
     .get({ id }) as { checklists: number; acoes: number };
 
   if (vinculos.checklists > 0 || vinculos.acoes > 0)
-    return "Usuario possui checklists ou acoes vinculadas.";
+    return "Usuário possui checklists ou ações vinculadas.";
 
   conectar().prepare("delete from users where id = ?").run(id);
   return null;
@@ -259,7 +259,7 @@ export function salvarResposta(entrada: {
   const fotoUrl = entrada.conforme ? null : entrada.fotoUrl ?? null;
 
   if (!entrada.conforme && (!observacao || !fotoUrl))
-    return "Nao conformidade exige descricao e foto.";
+    return "Não conformidade exige descricao e foto.";
 
   if (existente) {
     conectar().prepare(
@@ -285,8 +285,8 @@ export function salvarResposta(entrada: {
 
 export function finalizarChecklist(checklistId: string) {
   const checklist = obterChecklist(checklistId);
-  if (!checklist) return "Checklist invalido.";
-  if (checklist.status === "finalizado") return "Checklist ja finalizado.";
+  if (!checklist) return "Checklist inválido.";
+  if (checklist.status === "finalizado") return "Checklist já finalizado.";
 
   const itens = listarItens(checklist.template_id);
   const respostas = respostasDoChecklist(checklistId);
@@ -368,8 +368,8 @@ export function obterAcao(id: string) {
 
 export function definirPrazo(id: string, prazo: string, setorId: string) {
   const acao = obterAcao(id);
-  if (!acao || acao.setor_id !== setorId) return "Acao fora do seu setor.";
-  if (acao.status !== "aberta") return "Prazo so pode ser definido em acao aberta.";
+  if (!acao || acao.setor_id !== setorId) return "Ação fora do seu setor.";
+  if (acao.status !== "aberta") return "Prazo só pode ser definido em ação aberta.";
 
   conectar().prepare("update acoes set prazo = ?, status = 'com_prazo' where id = ?").run(
     prazo,
@@ -381,8 +381,8 @@ export function definirPrazo(id: string, prazo: string, setorId: string) {
 
 export function concluirAcao(id: string, lider: AppUser) {
   const acao = obterAcao(id);
-  if (!acao || acao.setor_id !== lider.setor_id) return "Acao fora do seu setor.";
-  if (acao.status !== "vencida") return "Apenas acoes vencidas sao avaliadas.";
+  if (!acao || acao.setor_id !== lider.setor_id) return "Ação fora do seu setor.";
+  if (acao.status !== "vencida") return "Apenas ações vencidas são avaliadas.";
 
   conectar().prepare(
     "update acoes set status = 'concluida', concluido_em = ?, concluido_por = ? where id = ?"
@@ -392,8 +392,8 @@ export function concluirAcao(id: string, lider: AppUser) {
 
 export function resetarAcao(id: string, lider: AppUser) {
   const acao = obterAcao(id);
-  if (!acao || acao.setor_id !== lider.setor_id) return "Acao fora do seu setor.";
-  if (acao.status !== "vencida") return "Apenas acoes vencidas sao avaliadas.";
+  if (!acao || acao.setor_id !== lider.setor_id) return "Ação fora do seu setor.";
+  if (acao.status !== "vencida") return "Apenas ações vencidas são avaliadas.";
 
   conectar().prepare(
     "update acoes set status = 'aberta', prazo = null, reset_count = reset_count + 1 where id = ?"

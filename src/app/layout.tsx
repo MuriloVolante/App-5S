@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Checklist de Conformidade",
-  description: "Checklists de conformidade por setor e acoes corretivas",
+  description: "Checklists de conformidade por setor e ações corretivas",
 };
 
 export default function RootLayout({

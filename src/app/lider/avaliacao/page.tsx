@@ -5,7 +5,7 @@ import AcaoVencida from "./acao-vencida";
 
 const LINKS = [
   { href: "/lider", rotulo: "Checklists" },
-  { href: "/lider/avaliacao", rotulo: "Acoes vencidas" },
+  { href: "/lider/avaliacao", rotulo: "Ações vencidas" },
 ];
 
 export default async function AvaliacaoPage() {
@@ -15,38 +15,24 @@ export default async function AvaliacaoPage() {
   return (
     <>
       <Header usuario={usuario} links={LINKS} ativo="/lider/avaliacao" />
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 py-8">
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 sm:px-5 sm:py-8">
         <div>
-          <h1 className="titulo">Avaliacao de acoes vencidas</h1>
+          <h1 className="titulo">Avaliação de ações vencidas</h1>
           <p className="subtitulo mt-1">
-            Concluir encerra a acao · Resetar devolve para o coordenador definir
+            Concluir encerra a ação · Resetar devolve para o coordenador definir
             novo prazo
           </p>
         </div>
 
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th className="w-32">Codigo</th>
-              <th>Problema</th>
-              <th className="w-40">Prazo original</th>
-              <th className="w-24">Resets</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
+        {acoes.length === 0 ? (
+          <p className="cartao-plano vazio">Nenhuma ação vencida</p>
+        ) : (
+          <ul className="flex flex-col gap-3">
             {acoes.map((acao) => (
               <AcaoVencida key={acao.id} acao={acao} />
             ))}
-            {acoes.length === 0 && (
-              <tr>
-                <td colSpan={5} className="vazio">
-                  Nenhuma acao vencida
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+          </ul>
+        )}
       </main>
     </>
   );

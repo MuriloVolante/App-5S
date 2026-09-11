@@ -43,19 +43,19 @@ export default async function DashboardPage() {
     usuario.papel === "admin"
       ? [
           { href: "/admin/setores", rotulo: "Setores" },
-          { href: "/admin/usuarios", rotulo: "Usuarios" },
+          { href: "/admin/usuarios", rotulo: "Usuários" },
           { href: "/admin/templates", rotulo: "Templates" },
           { href: "/dashboard", rotulo: "Dashboard" },
         ]
       : [
-          { href: "/coordenador", rotulo: "Acoes do setor" },
+          { href: "/coordenador", rotulo: "Ações do setor" },
           { href: "/dashboard", rotulo: "Dashboard" },
         ];
 
   return (
     <>
       <Header usuario={usuario} links={links} ativo="/dashboard" />
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-8">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 sm:px-5 sm:py-8">
         <div>
           <h1 className="titulo">Dashboard</h1>
           <p className="subtitulo mt-1">
@@ -66,18 +66,19 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Indicador valor={acoes.length} rotulo="Acoes totais" />
+          <Indicador valor={acoes.length} rotulo="Ações totais" />
           <Indicador valor={vencidas.length} rotulo="Vencidas" />
-          <Indicador valor={recorrentes.length} rotulo="Com reincidencia" />
+          <Indicador valor={recorrentes.length} rotulo="Com reincidência" />
           <Indicador
             valor={mediaGeral === null ? "—" : mediaGeral.toFixed(1)}
-            rotulo="Dias ate concluir"
+            rotulo="Dias até concluir"
           />
         </div>
 
         <section className="flex flex-col gap-3">
-          <h2 className="subtitulo">Acoes por status e setor</h2>
-          <table className="tabela">
+          <h2 className="subtitulo">Ações por status e setor</h2>
+          <div className="tabela-rolagem">
+        <table className="tabela">
             <thead>
               <tr>
                 <th>Setor</th>
@@ -117,14 +118,16 @@ export default async function DashboardPage() {
               )}
             </tbody>
           </table>
+        </div>
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="subtitulo">Acoes vencidas ({vencidas.length})</h2>
-          <table className="tabela">
+          <h2 className="subtitulo">Ações vencidas ({vencidas.length})</h2>
+          <div className="tabela-rolagem">
+        <table className="tabela">
             <thead>
               <tr>
-                <th className="w-32">Codigo</th>
+                <th className="w-32">Código</th>
                 <th>Problema</th>
                 <th className="w-56">Setor</th>
                 <th className="w-32">Prazo</th>
@@ -156,16 +159,18 @@ export default async function DashboardPage() {
               )}
             </tbody>
           </table>
+        </div>
         </section>
 
         <section className="flex flex-col gap-3">
           <h2 className="subtitulo">
-            Reincidencia · acoes resetadas ({recorrentes.length})
+            Reincidência · ações resetadas ({recorrentes.length})
           </h2>
-          <table className="tabela">
+          <div className="tabela-rolagem">
+        <table className="tabela">
             <thead>
               <tr>
-                <th className="w-32">Codigo</th>
+                <th className="w-32">Código</th>
                 <th>Problema</th>
                 <th className="w-56">Setor</th>
                 <th className="w-36">Status</th>
@@ -195,16 +200,18 @@ export default async function DashboardPage() {
               )}
             </tbody>
           </table>
+        </div>
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="subtitulo">Tempo medio de resolucao por setor</h2>
-          <table className="tabela">
+          <h2 className="subtitulo">Tempo médio de resolução por setor</h2>
+          <div className="tabela-rolagem">
+        <table className="tabela">
             <thead>
               <tr>
                 <th>Setor</th>
-                <th className="w-36">Concluidas</th>
-                <th className="w-40">Media (dias)</th>
+                <th className="w-36">Concluídas</th>
+                <th className="w-40">Média (dias)</th>
               </tr>
             </thead>
             <tbody>
@@ -237,6 +244,7 @@ export default async function DashboardPage() {
               )}
             </tbody>
           </table>
+        </div>
         </section>
       </main>
     </>

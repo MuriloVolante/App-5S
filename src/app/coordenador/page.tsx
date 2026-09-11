@@ -5,7 +5,7 @@ import { ROTULO_STATUS_ACAO, type StatusAcao } from "@/types";
 import AcaoLinha from "./acao-linha";
 
 const LINKS = [
-  { href: "/coordenador", rotulo: "Acoes do setor" },
+  { href: "/coordenador", rotulo: "Ações do setor" },
   { href: "/dashboard", rotulo: "Dashboard" },
 ];
 
@@ -18,11 +18,11 @@ export default async function CoordenadorPage() {
   return (
     <>
       <Header usuario={usuario} links={LINKS} ativo="/coordenador" />
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-8">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-5 sm:py-8">
         <div>
-          <h1 className="titulo">Acoes do setor</h1>
+          <h1 className="titulo">Ações do setor</h1>
           <p className="subtitulo mt-1">
-            Acao aberta precisa de prazo para entrar em acompanhamento
+            Ação aberta precisa de prazo para entrar em acompanhamento
           </p>
         </div>
 
@@ -37,10 +37,12 @@ export default async function CoordenadorPage() {
           ))}
         </div>
 
+        <div className="tabela-rolagem">
         <table className="tabela">
           <thead>
             <tr>
-              <th className="w-32">Codigo</th>
+              <th className="w-32">Código</th>
+              <th className="w-24">Foto</th>
               <th>Problema</th>
               <th className="w-36">Status</th>
               <th className="w-64">Prazo</th>
@@ -53,13 +55,14 @@ export default async function CoordenadorPage() {
             ))}
             {acoes.length === 0 && (
               <tr>
-                <td colSpan={5} className="vazio">
+                <td colSpan={6} className="vazio">
                   Nenhuma acao no setor
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+        </div>
       </main>
     </>
   );

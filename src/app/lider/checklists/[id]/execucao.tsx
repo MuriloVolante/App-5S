@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import Foto from "@/components/foto";
 import { ESTADO_INICIAL } from "@/lib/actions";
 import type { ChecklistItem, ChecklistResposta } from "@/types";
 import { finalizar, marcarConforme, registrarNaoConforme } from "./actions";
@@ -24,22 +25,24 @@ export default function Execucao({
     ESTADO_INICIAL
   );
 
-  const porItem = new Map(respostas.map((resposta) => [resposta.item_id, resposta]));
+  const porItem = new Map(
+    respostas.map((resposta) => [resposta.item_id, resposta])
+  );
   const respondidos = itens.filter((item) => porItem.has(item.id)).length;
   const erro = conforme.erro ?? final.erro;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="cartao-plano flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+      <div className="cartao-plano barra-acao">
         <span className="subtitulo">
           {respondidos} de {itens.length} itens respondidos
         </span>
-        <form action={acaoFinal}>
+        <form action={acaoFinal} className="w-full sm:w-auto">
           <input type="hidden" name="checklist_id" value={checklistId} />
           <button
             type="submit"
             disabled={finalizando}
-            className="botao botao-laranja"
+            className="botao botao-laranja w-full"
           >
             Finalizar checklist
           </button>
@@ -54,7 +57,7 @@ export default function Execucao({
           return (
             <li
               key={item.id}
-              className={`cartao-plano item-linha flex flex-wrap items-center justify-between gap-4 px-4 py-3 ${
+              className={`cartao-plano item-linha cartao-item ${
                 resposta
                   ? resposta.conforme
                     ? "item-conforme"
@@ -62,28 +65,27 @@ export default function Execucao({
                   : ""
               }`}
             >
-              <div className="min-w-[220px] flex-1">
-                <p>
-                  <span className="codigo">{item.codigo}</span> {item.descricao}
-                </p>
-                {resposta && !resposta.conforme && (
-                  <p className="nota mt-1">
-                    {resposta.observacao} ·{" "}
-                    {resposta.foto_url && (
-                      <a
-                        href={resposta.foto_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="underline"
-                      >
-                        ver foto
-                      </a>
-                    )}
-                  </p>
+              <div className="flex min-w-0 flex-1 gap-3">
+                {resposta && !resposta.conforme && resposta.foto_url && (
+                  <Foto
+                    url={resposta.foto_url}
+                    legenda={`${item.codigo} · ${item.descricao}`}
+                  />
                 )}
+                <div className="min-w-0">
+                  <p className="break-words">
+                    <span className="codigo">{item.codigo}</span>{" "}
+                    {item.descricao}
+                  </p>
+                  {resposta && !resposta.conforme && (
+                    <p className="nota mt-1 break-words">
+                      {resposta.observacao}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="cartao-item-acoes">
                 <form action={acaoConforme}>
                   <input type="hidden" name="checklist_id" value={checklistId} />
                   <input type="hidden" name="item_id" value={item.id} />
@@ -105,7 +107,7 @@ export default function Execucao({
                       : ""
                   }`}
                 >
-                  Nao conforme
+                  Não conforme
                 </button>
               </div>
             </li>
@@ -144,19 +146,19 @@ function ModalNaoConforme({
 
   return (
     <div className="modal-fundo">
-      <form action={action} className="cartao w-full max-w-md p-5">
-        <p className="subtitulo">Nao conformidade</p>
+      <form action={action} className="cartao w-full max-w-md p-4 sm:p-5">
+        <p className="subtitulo">Não conformidade</p>
         <h2 className="titulo mt-1">
           <span className="codigo">{item.codigo}</span>
         </h2>
-        <p className="nota mt-2">{item.descricao}</p>
+        <p className="nota mt-2 break-words">{item.descricao}</p>
 
         <input type="hidden" name="checklist_id" value={checklistId} />
         <input type="hidden" name="item_id" value={item.id} />
 
         <div className="mt-4">
           <label className="rotulo" htmlFor="observacao">
-            Descricao do problema
+            Descrição do problema
           </label>
           <textarea
             id="observacao"
@@ -169,7 +171,7 @@ function ModalNaoConforme({
 
         <div className="mt-4">
           <label className="rotulo" htmlFor="foto">
-            Foto (obrigatoria)
+            Foto (obrigatória)
           </label>
           <input
             id="foto"
@@ -184,7 +186,7 @@ function ModalNaoConforme({
 
         {state.erro && <p className="erro mt-3">{state.erro}</p>}
 
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-5 grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={aoFechar}

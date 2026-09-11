@@ -46,8 +46,10 @@ body {
 .marca-simbolo {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  font-size: 11px;
   background: var(--tinta);
   color: var(--papel-claro);
   font-weight: 700;
@@ -56,10 +58,23 @@ body {
 }
 
 .marca-nome {
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .marca-simbolo {
+    width: 38px;
+    height: 38px;
+    font-size: 13px;
+  }
+
+  .marca-nome {
+    font-size: 17px;
+    letter-spacing: 0.14em;
+  }
 }
 
 .marca-sub {
@@ -408,6 +423,7 @@ select.campo {
   display: grid;
   place-items: center;
   padding: 16px;
+  overflow-y: auto;
   background: rgba(27, 42, 68, 0.55);
 }
 
@@ -451,4 +467,204 @@ select.campo {
   background: var(--vermelho);
   border-color: var(--vermelho);
   color: var(--papel-claro);
+}
+
+
+/* cabecalho */
+
+.cabecalho {
+  border-bottom: 2px solid var(--tinta);
+  background: var(--papel-claro);
+}
+
+.cabecalho-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
+
+.cabecalho-usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cabecalho-nome {
+  min-width: 0;
+  text-align: right;
+}
+
+.cabecalho-nome span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cabecalho-nav {
+  display: flex;
+  gap: 4px;
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 16px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.cabecalho-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.cabecalho-nav .link-nav {
+  white-space: nowrap;
+}
+
+@media (min-width: 900px) {
+  .cabecalho-topo {
+    padding: 14px 20px;
+  }
+
+  .cabecalho-nav {
+    padding: 0 20px 12px;
+  }
+}
+
+/* fotos */
+
+.miniatura {
+  display: block;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 1px solid var(--tinta);
+  background: var(--papel-escuro);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.miniatura img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.miniatura:hover {
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 2px var(--laranja);
+}
+
+.foto-ampliada {
+  width: min(680px, 100%);
+  padding: 14px;
+}
+
+.foto-ampliada img {
+  display: block;
+  width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border: 1px solid var(--tinta);
+  background: var(--papel-escuro);
+}
+
+.foto-ampliada-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* tabelas em tela estreita */
+
+.tabela-rolagem {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabela-rolagem > .tabela {
+  min-width: 640px;
+}
+
+/* listas responsivas (telas do lider) */
+
+.cartao-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.cartao-item-acoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.cartao-item-acoes .botao {
+  width: 100%;
+}
+
+.barra-acao {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.barra-acao .botao {
+  width: 100%;
+}
+
+.dados-acao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+
+.dado-rotulo {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tinta-media);
+}
+
+@media (min-width: 720px) {
+  .cartao-item {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 16px;
+  }
+
+  .cartao-item-acoes {
+    grid-template-columns: auto auto;
+  }
+
+  .cartao-item-acoes .botao {
+    width: auto;
+  }
+
+  .barra-acao {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .barra-acao .botao {
+    width: auto;
+  }
+
+  .dados-acao {
+    grid-template-columns: repeat(4, minmax(0, auto));
+    gap: 8px 24px;
+  }
 }

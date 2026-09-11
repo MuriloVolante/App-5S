@@ -13,13 +13,13 @@ export default async function LoginPage() {
   const vazio = contarUsuarios() === 0;
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-6 px-5 py-10">
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-6 px-4 py-10 sm:px-5">
       <Marca />
       <LoginForm />
       <p className="nota">
         {vazio
-          ? "A primeira conta criada vira administradora. As demais comecam sem papel e precisam de liberacao do administrador."
-          : "Contas novas comecam sem papel e precisam de liberacao do administrador."}
+          ? "A primeira conta criada vira administradora. As demais começam sem papel e precisam de liberação do administrador."
+          : "Contas novas começam sem papel e precisam de liberação do administrador."}
       </p>
     </main>
   );

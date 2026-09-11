@@ -11,7 +11,7 @@ export async function criarChecklist(
 ): Promise<EstadoAcao> {
   const usuario = await requirePapel(["lider"]);
   const templateId = String(formData.get("template_id") ?? "");
-  if (!templateId) return { erro: "Template invalido." };
+  if (!templateId) return { erro: "Template inválido." };
 
   const template = repo.obterTemplate(templateId);
   if (!template || template.setor_id !== usuario.setor_id)

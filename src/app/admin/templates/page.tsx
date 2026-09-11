@@ -16,10 +16,11 @@ export default function TemplatesPage() {
 
       <TemplateForm setores={setores} />
 
-      <table className="tabela">
+      <div className="tabela-rolagem">
+        <table className="tabela">
         <thead>
           <tr>
-            <th className="w-32">Codigo</th>
+            <th className="w-32">Código</th>
             <th>Nome / setor</th>
             <th className="w-20">Itens</th>
             <th />
@@ -43,6 +44,7 @@ export default function TemplatesPage() {
           )}
         </tbody>
       </table>
+        </div>
     </div>
   );
 }

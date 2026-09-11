@@ -22,7 +22,7 @@ export default function TemplateForm({ setores }: { setores: Setor[] }) {
           <input
             name="nome"
             required
-            placeholder="Ex: Inspecao diaria"
+            placeholder="Ex: Inspeção diária"
             className="campo"
           />
         </div>

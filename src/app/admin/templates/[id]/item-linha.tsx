@@ -22,7 +22,7 @@ export default function ItemLinha({ item }: { item: ChecklistItem }) {
           <input type="hidden" name="id" value={item.id} />
           <input type="hidden" name="template_id" value={item.template_id} />
           <div className="min-w-[260px] flex-1">
-            <label className="rotulo">Descricao</label>
+            <label className="rotulo">Descrição</label>
             <input
               name="descricao"
               defaultValue={item.descricao}

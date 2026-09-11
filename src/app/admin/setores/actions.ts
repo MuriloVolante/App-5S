@@ -25,7 +25,7 @@ export async function atualizarSetor(
   await requirePapel(["admin"]);
   const id = String(formData.get("id") ?? "");
   const nome = String(formData.get("nome") ?? "").trim();
-  if (!id) return { erro: "Setor invalido." };
+  if (!id) return { erro: "Setor inválido." };
   if (!nome) return { erro: "Informe o nome do setor." };
 
   repo.atualizarSetor(id, nome);
@@ -39,7 +39,7 @@ export async function excluirSetor(
 ): Promise<EstadoAcao> {
   await requirePapel(["admin"]);
   const id = String(formData.get("id") ?? "");
-  if (!id) return { erro: "Setor invalido." };
+  if (!id) return { erro: "Setor inválido." };
 
   const erro = repo.excluirSetor(id);
   if (erro) return { erro };

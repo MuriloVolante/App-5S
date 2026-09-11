@@ -18,11 +18,11 @@ export async function entrar(
   const senha = String(formData.get("senha") ?? "");
 
   if (!email || !senha)
-    return { erro: "Informe email e senha.", aba: "entrar" };
+    return { erro: "Informe e-mail e senha.", aba: "entrar" };
 
   const usuario = buscarUsuarioPorEmail(email);
   if (!usuario || !conferirSenha(senha, usuario.senha_hash))
-    return { erro: "Email ou senha invalidos.", aba: "entrar" };
+    return { erro: "E-mail ou senha inválidos.", aba: "entrar" };
 
   await criarSessao(usuario.id);
   redirect(usuario.papel ? HOME_POR_PAPEL[usuario.papel] : "/pendente");
@@ -39,7 +39,7 @@ export async function criarConta(
   const senha = String(formData.get("senha") ?? "");
 
   if (!nome) return { erro: "Informe o nome.", aba: "criar" };
-  if (!email) return { erro: "Informe o email.", aba: "criar" };
+  if (!email) return { erro: "Informe o e-mail.", aba: "criar" };
   if (senha.length < 6)
     return { erro: "Senha deve ter ao menos 6 caracteres.", aba: "criar" };
 
@@ -52,7 +52,7 @@ export async function criarConta(
     setorId: null,
   });
 
-  if (resultado === "Email ja cadastrado.")
+  if (resultado === "E-mail já cadastrado.")
     return { erro: resultado, aba: "criar" };
 
   await criarSessao(resultado);

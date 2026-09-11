@@ -84,12 +84,17 @@ export const HOME_POR_PAPEL: Record<Papel, string> = {
 export const ROTULO_PAPEL: Record<Papel, string> = {
   admin: "Admin",
   coordenador: "Coordenador",
-  lider: "Lider",
+  lider: "Líder",
+};
+
+export const ROTULO_STATUS_CHECKLIST: Record<StatusChecklist, string> = {
+  aberto: "Aberto",
+  finalizado: "Finalizado",
 };
 
 export const ROTULO_STATUS_ACAO: Record<StatusAcao, string> = {
   aberta: "Aberta",
   com_prazo: "Com prazo",
   vencida: "Vencida",
-  concluida: "Concluida",
+  concluida: "Concluída",
 };

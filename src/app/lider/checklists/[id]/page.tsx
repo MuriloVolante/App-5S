@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import Foto from "@/components/foto";
 import Header from "@/components/header";
 import { requirePapel } from "@/lib/auth";
 import {
@@ -8,11 +9,12 @@ import {
   obterTemplate,
   respostasDoChecklist,
 } from "@/lib/repo";
+import { ROTULO_STATUS_CHECKLIST } from "@/types";
 import Execucao from "./execucao";
 
 const LINKS = [
   { href: "/lider", rotulo: "Checklists" },
-  { href: "/lider/avaliacao", rotulo: "Acoes vencidas" },
+  { href: "/lider/avaliacao", rotulo: "Ações vencidas" },
 ];
 
 export default async function ChecklistPage({
@@ -34,18 +36,18 @@ export default async function ChecklistPage({
   return (
     <>
       <Header usuario={usuario} links={LINKS} ativo="/lider" />
-      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 py-8">
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 sm:px-5 sm:py-8">
         <div>
           <Link href="/lider" className="link-voltar">
             &larr; Meus checklists
           </Link>
-          <h1 className="titulo mt-2">
+          <h1 className="titulo mt-2 break-words">
             <span className="codigo">{checklist.codigo}</span> {template?.nome}
           </h1>
           <p className="subtitulo mt-1">
             {template?.codigo} ·{" "}
             <span className={`selo selo-${checklist.status}`}>
-              {checklist.status}
+              {ROTULO_STATUS_CHECKLIST[checklist.status]}
             </span>
           </p>
         </div>
@@ -59,41 +61,41 @@ export default async function ChecklistPage({
         ) : (
           <ul className="flex flex-col gap-2">
             {itens.map((item) => {
-              const resposta = respostas.find((atual) => atual.item_id === item.id);
+              const resposta = respostas.find(
+                (atual) => atual.item_id === item.id
+              );
               return (
                 <li
                   key={item.id}
-                  className={`cartao-plano item-linha flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
+                  className={`cartao-plano item-linha cartao-item ${
                     resposta?.conforme ? "item-conforme" : "item-nao-conforme"
                   }`}
                 >
-                  <div className="min-w-[220px] flex-1">
-                    <p>
-                      <span className="codigo">{item.codigo}</span>{" "}
-                      {item.descricao}
-                    </p>
-                    {resposta && !resposta.conforme && (
-                      <p className="nota mt-1">
-                        {resposta.observacao} ·{" "}
-                        {resposta.foto_url && (
-                          <a
-                            href={resposta.foto_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="underline"
-                          >
-                            ver foto
-                          </a>
-                        )}
-                      </p>
+                  <div className="flex min-w-0 flex-1 gap-3">
+                    {resposta && !resposta.conforme && resposta.foto_url && (
+                      <Foto
+                        url={resposta.foto_url}
+                        legenda={`${item.codigo} · ${item.descricao}`}
+                      />
                     )}
+                    <div className="min-w-0">
+                      <p className="break-words">
+                        <span className="codigo">{item.codigo}</span>{" "}
+                        {item.descricao}
+                      </p>
+                      {resposta && !resposta.conforme && (
+                        <p className="nota mt-1 break-words">
+                          {resposta.observacao}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <span
                     className={`selo ${
                       resposta?.conforme ? "selo-conforme" : "selo-nao-conforme"
                     }`}
                   >
-                    {resposta?.conforme ? "Conforme" : "Nao conforme"}
+                    {resposta?.conforme ? "Conforme" : "Não conforme"}
                   </span>
                 </li>
               );

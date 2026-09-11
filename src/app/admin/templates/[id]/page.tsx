@@ -35,11 +35,12 @@ export default async function TemplateItensPage({
 
       <ItemForm templateId={template.id} proximaOrdem={proximaOrdem} />
 
-      <table className="tabela">
+      <div className="tabela-rolagem">
+        <table className="tabela">
         <thead>
           <tr>
-            <th className="w-32">Codigo</th>
-            <th>Descricao / ordem</th>
+            <th className="w-32">Código</th>
+            <th>Descrição / ordem</th>
             <th />
           </tr>
         </thead>
@@ -56,6 +57,7 @@ export default async function TemplateItensPage({
           )}
         </tbody>
       </table>
+        </div>
     </div>
   );
 }

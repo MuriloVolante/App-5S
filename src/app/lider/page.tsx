@@ -6,11 +6,12 @@ import {
   listarChecklistsDoLider,
   listarTemplatesDoSetor,
 } from "@/lib/repo";
+import { ROTULO_STATUS_CHECKLIST } from "@/types";
 import CriarChecklist from "./criar-checklist";
 
 const LINKS = [
   { href: "/lider", rotulo: "Checklists" },
-  { href: "/lider/avaliacao", rotulo: "Acoes vencidas" },
+  { href: "/lider/avaliacao", rotulo: "Ações vencidas" },
 ];
 
 export default async function LiderPage() {
@@ -22,14 +23,11 @@ export default async function LiderPage() {
   return (
     <>
       <Header usuario={usuario} links={LINKS} ativo="/lider" />
-      <main className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 py-8">
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-6 sm:px-5 sm:py-8">
         {vencidas > 0 && (
-          <Link
-            href="/lider/avaliacao"
-            className="cartao flex items-center justify-between px-4 py-3"
-          >
+          <Link href="/lider/avaliacao" className="cartao barra-acao">
             <span className="subtitulo">
-              {vencidas} acao(oes) vencida(s) aguardando avaliacao
+              {vencidas} ação(ões) vencida(s) aguardando avaliação
             </span>
             <span className="botao botao-laranja botao-mini">Avaliar</span>
           </Link>
@@ -39,16 +37,13 @@ export default async function LiderPage() {
           <h1 className="titulo">Templates do meu setor</h1>
           {templates.length === 0 && (
             <p className="nota">
-              Nenhum template cadastrado para o seu setor. Peca ao administrador.
+              Nenhum template cadastrado para o seu setor. Peça ao administrador.
             </p>
           )}
           <ul className="flex flex-col gap-2">
             {templates.map((template) => (
-              <li
-                key={template.id}
-                className="cartao-plano flex flex-wrap items-center justify-between gap-3 px-4 py-3"
-              >
-                <span>
+              <li key={template.id} className="cartao-plano cartao-item">
+                <span className="break-words">
                   <span className="codigo">{template.codigo}</span>{" "}
                   {template.nome}
                 </span>
@@ -61,39 +56,28 @@ export default async function LiderPage() {
         <section className="flex flex-col gap-3">
           <h2 className="titulo">Meus checklists</h2>
           {checklists.length === 0 ? (
-            <p className="nota">Nenhum checklist criado ate agora.</p>
+            <p className="nota">Nenhum checklist criado até agora.</p>
           ) : (
-            <table className="tabela">
-              <thead>
-                <tr>
-                  <th className="w-32">Codigo</th>
-                  <th>Criado em</th>
-                  <th className="w-40">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {checklists.map((checklist) => (
-                  <tr key={checklist.id}>
-                    <td>
-                      <Link
-                        href={`/lider/checklists/${checklist.id}`}
-                        className="codigo underline"
-                      >
-                        {checklist.codigo}
-                      </Link>
-                    </td>
-                    <td>
-                      {new Date(checklist.data_criacao).toLocaleString("pt-BR")}
-                    </td>
-                    <td>
-                      <span className={`selo selo-${checklist.status}`}>
-                        {checklist.status}
+            <ul className="flex flex-col gap-2">
+              {checklists.map((checklist) => (
+                <li key={checklist.id}>
+                  <Link
+                    href={`/lider/checklists/${checklist.id}`}
+                    className="cartao-plano cartao-item"
+                  >
+                    <span className="flex flex-col gap-1">
+                      <span className="codigo">{checklist.codigo}</span>
+                      <span className="nota">
+                        {new Date(checklist.data_criacao).toLocaleString("pt-BR")}
                       </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </span>
+                    <span className={`selo selo-${checklist.status}`}>
+                      {ROTULO_STATUS_CHECKLIST[checklist.status]}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       </main>

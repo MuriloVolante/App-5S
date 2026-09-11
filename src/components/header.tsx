@@ -14,25 +14,13 @@ export default function Header({
   ativo?: string;
 }) {
   return (
-    <header className="border-b-2 border-[var(--tinta)] bg-[var(--papel-claro)]">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4">
+    <header className="cabecalho">
+      <div className="cabecalho-topo">
         <Marca compacta />
 
-        <nav className="flex flex-wrap items-center gap-1">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`link-nav ${ativo === link.href ? "link-nav-ativo" : ""}`}
-            >
-              {link.rotulo}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <span className="text-right">
-            <span className="block text-[12px] font-bold">{usuario.nome}</span>
+        <div className="cabecalho-usuario">
+          <span className="cabecalho-nome">
+            <span className="text-[12px] font-bold">{usuario.nome}</span>
             <span className="marca-sub">
               {usuario.codigo} ·{" "}
               {usuario.papel ? ROTULO_PAPEL[usuario.papel] : "Sem papel"}
@@ -45,6 +33,21 @@ export default function Header({
           </form>
         </div>
       </div>
+
+      {links.length > 0 && (
+        <nav className="cabecalho-nav">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`link-nav ${ativo === link.href ? "link-nav-ativo" : ""}`}
+            >
+              {link.rotulo}
+            </Link>
+          ))}
+        </nav>
+      )}
+
       <div className="faixa-laranja" />
     </header>
   );

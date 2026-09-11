@@ -14,10 +14,11 @@ export default function SetoresPage() {
 
       <SetorForm />
 
-      <table className="tabela">
+      <div className="tabela-rolagem">
+        <table className="tabela">
         <thead>
           <tr>
-            <th className="w-32">Codigo</th>
+            <th className="w-32">Código</th>
             <th>Nome</th>
             <th />
           </tr>
@@ -35,6 +36,7 @@ export default function SetoresPage() {
           )}
         </tbody>
       </table>
+        </div>
     </div>
   );
 }

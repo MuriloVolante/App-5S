@@ -11,7 +11,7 @@ export async function concluir(
 ): Promise<EstadoAcao> {
   const usuario = await requirePapel(["lider"]);
   const id = String(formData.get("id") ?? "");
-  if (!id) return { erro: "Acao invalida." };
+  if (!id) return { erro: "Ação inválida." };
 
   const erro = repo.concluirAcao(id, usuario);
   if (erro) return { erro };
@@ -26,7 +26,7 @@ export async function resetar(
 ): Promise<EstadoAcao> {
   const usuario = await requirePapel(["lider"]);
   const id = String(formData.get("id") ?? "");
-  if (!id) return { erro: "Acao invalida." };
+  if (!id) return { erro: "Ação inválida." };
 
   const erro = repo.resetarAcao(id, usuario);
   if (erro) return { erro };

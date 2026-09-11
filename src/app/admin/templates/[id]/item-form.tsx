@@ -24,11 +24,11 @@ export default function ItemForm({
       <div className="flex flex-wrap items-end gap-3">
         <input type="hidden" name="template_id" value={templateId} />
         <div className="min-w-[280px] flex-1">
-          <label className="rotulo">Descricao</label>
+          <label className="rotulo">Descrição</label>
           <input
             name="descricao"
             required
-            placeholder="Ex: Extintores desobstruidos"
+            placeholder="Ex: Extintores desobstruídos"
             className="campo"
           />
         </div>

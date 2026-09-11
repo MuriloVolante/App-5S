@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Foto from "@/components/foto";
 import { ESTADO_INICIAL } from "@/lib/actions";
 import { ROTULO_STATUS_ACAO, type Acao } from "@/types";
 import { definirPrazo } from "./actions";
@@ -11,19 +12,13 @@ export default function AcaoLinha({ acao }: { acao: Acao }) {
   return (
     <tr>
       <td className="codigo align-top">{acao.codigo}</td>
+      <td className="align-top">
+        <Foto url={acao.foto_url} legenda={acao.codigo} />
+      </td>
       <td>
         {acao.descricao_problema}
         <p className="nota mt-1">
-          <a
-            href={acao.foto_url}
-            target="_blank"
-            rel="noreferrer"
-            className="underline"
-          >
-            ver foto
-          </a>{" "}
-          · aberta em{" "}
-          {new Date(acao.aberto_em).toLocaleDateString("pt-BR")}
+          aberta em {new Date(acao.aberto_em).toLocaleDateString("pt-BR")}
         </p>
         {state.erro && <p className="erro mt-1">{state.erro}</p>}
       </td>

@@ -28,7 +28,7 @@ export async function atualizarTemplate(
   const id = String(formData.get("id") ?? "");
   const nome = String(formData.get("nome") ?? "").trim();
   const setorId = String(formData.get("setor_id") ?? "");
-  if (!id) return { erro: "Template invalido." };
+  if (!id) return { erro: "Template inválido." };
   if (!nome) return { erro: "Informe o nome do template." };
   if (!setorId) return { erro: "Selecione o setor." };
 
@@ -43,7 +43,7 @@ export async function excluirTemplate(
 ): Promise<EstadoAcao> {
   await requirePapel(["admin"]);
   const id = String(formData.get("id") ?? "");
-  if (!id) return { erro: "Template invalido." };
+  if (!id) return { erro: "Template inválido." };
 
   const erro = repo.excluirTemplate(id);
   if (erro) return { erro };
@@ -60,8 +60,8 @@ export async function criarItem(
   const templateId = String(formData.get("template_id") ?? "");
   const descricao = String(formData.get("descricao") ?? "").trim();
   const ordem = Number(formData.get("ordem") ?? 0) || 1;
-  if (!templateId) return { erro: "Template invalido." };
-  if (!descricao) return { erro: "Informe a descricao do item." };
+  if (!templateId) return { erro: "Template inválido." };
+  if (!descricao) return { erro: "Informe a descrição do item." };
 
   repo.criarItem(templateId, descricao, ordem);
   revalidatePath(`/admin/templates/${templateId}`);
@@ -77,8 +77,8 @@ export async function atualizarItem(
   const templateId = String(formData.get("template_id") ?? "");
   const descricao = String(formData.get("descricao") ?? "").trim();
   const ordem = Number(formData.get("ordem") ?? 0) || 1;
-  if (!id) return { erro: "Item invalido." };
-  if (!descricao) return { erro: "Informe a descricao do item." };
+  if (!id) return { erro: "Item inválido." };
+  if (!descricao) return { erro: "Informe a descrição do item." };
 
   repo.atualizarItem(id, descricao, ordem);
   revalidatePath(`/admin/templates/${templateId}`);
@@ -92,7 +92,7 @@ export async function excluirItem(
   await requirePapel(["admin"]);
   const id = String(formData.get("id") ?? "");
   const templateId = String(formData.get("template_id") ?? "");
-  if (!id) return { erro: "Item invalido." };
+  if (!id) return { erro: "Item inválido." };
 
   const erro = repo.excluirItem(id);
   if (erro) return { erro };

@@ -10,13 +10,13 @@ export default async function PendentePage() {
   return (
     <>
       <Header usuario={usuario} />
-      <main className="mx-auto w-full max-w-md px-5 py-12">
+      <main className="mx-auto w-full max-w-md px-4 py-10 sm:px-5 sm:py-12">
         <div className="cartao p-6">
           <h1 className="titulo">Acesso pendente</h1>
           <p className="nota mt-3">
             Sua conta <span className="codigo">{usuario.codigo}</span> foi criada,
-            mas ainda nao tem papel definido. Peca ao administrador para atribuir
-            papel e setor em Admin / Usuarios.
+            mas ainda não tem papel definido. Peça ao administrador para atribuir
+            papel e setor em Admin / Usuários.
           </p>
         </div>
       </main>

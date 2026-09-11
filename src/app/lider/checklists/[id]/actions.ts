@@ -16,9 +16,9 @@ async function checklistEditavel(checklistId: string): Promise<Contexto> {
   const checklist = repo.obterChecklist(checklistId);
 
   if (!checklist || checklist.lider_id !== usuario.id)
-    return { bloqueio: "Checklist invalido." };
+    return { bloqueio: "Checklist inválido." };
   if (checklist.status !== "aberto")
-    return { bloqueio: "Checklist ja finalizado." };
+    return { bloqueio: "Checklist já finalizado." };
 
   return { bloqueio: null, checklist };
 }
@@ -29,7 +29,7 @@ export async function marcarConforme(
 ): Promise<EstadoAcao> {
   const checklistId = String(formData.get("checklist_id") ?? "");
   const itemId = String(formData.get("item_id") ?? "");
-  if (!checklistId || !itemId) return { erro: "Resposta invalida." };
+  if (!checklistId || !itemId) return { erro: "Resposta inválida." };
 
   const contexto = await checklistEditavel(checklistId);
   if (contexto.bloqueio) return { erro: contexto.bloqueio };
@@ -50,10 +50,10 @@ export async function registrarNaoConforme(
   const observacao = String(formData.get("observacao") ?? "").trim();
   const foto = formData.get("foto");
 
-  if (!checklistId || !itemId) return { erro: "Resposta invalida." };
+  if (!checklistId || !itemId) return { erro: "Resposta inválida." };
   if (!observacao) return { erro: "Descreva o problema." };
   if (!(foto instanceof File) || foto.size === 0)
-    return { erro: "Anexe a foto da nao conformidade." };
+    return { erro: "Anexe a foto da não conformidade." };
   if (!foto.type.startsWith("image/"))
     return { erro: "O anexo precisa ser uma imagem." };
 
@@ -79,7 +79,7 @@ export async function finalizar(
   formData: FormData
 ): Promise<EstadoAcao> {
   const checklistId = String(formData.get("checklist_id") ?? "");
-  if (!checklistId) return { erro: "Checklist invalido." };
+  if (!checklistId) return { erro: "Checklist inválido." };
 
   const contexto = await checklistEditavel(checklistId);
   if (contexto.bloqueio) return { erro: contexto.bloqueio };

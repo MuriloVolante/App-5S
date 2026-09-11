@@ -16,7 +16,7 @@ export default function UsuarioForm({ setores }: { setores: Setor[] }) {
 
   return (
     <form ref={ref} action={action} className="cartao flex flex-col gap-3 p-4">
-      <p className="subtitulo">Novo usuario</p>
+      <p className="subtitulo">Novo usuário</p>
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-[170px] flex-1">
           <label className="rotulo">Nome</label>

@@ -23,7 +23,7 @@ export default function SetorForm() {
             id="nome-setor"
             name="nome"
             required
-            placeholder="Ex: Producao"
+            placeholder="Ex: Produção"
             className="campo"
           />
         </div>
