@@ -91,6 +91,26 @@ src/app/...        telas por papel
 | `UPLOADS_DIR` | pasta das fotos (padrão `data/uploads`) |
 | `SEM_DEMO=1` | não cria setores, usuários e templates de exemplo |
 
+## Volume de dados
+
+Toda lista é paginada no banco (`limit`/`offset` + `count`), então a tela nunca carrega a
+tabela inteira:
+
+| Tela | Página |
+|---|---|
+| Admin: setores, usuários, templates, itens do template | 20 por página |
+| Embaixador: checklists do setor, ações do setor | 20 por página |
+| Auditor: checklists a preencher | 20 · finalizados 10 |
+| Auditor: ações vencidas | 20 por página |
+| Dashboard: vencidas e reincidentes | 20 · tabelas por setor 10 |
+
+Os indicadores do dashboard (totais por status, vencidas, reincidência e tempo médio) são
+calculados por agregação em SQL — nenhuma linha de `acoes` é carregada para a memória do
+servidor. O banco tem índices para os filtros usados (setor, status, prazo, template).
+
+A exceção proposital é a execução do checklist, que carrega todos os itens do template:
+o auditor precisa responder todos antes de finalizar.
+
 ## Limitações
 
 - SQLite em arquivo e fotos em disco funcionam localmente e em servidor com disco

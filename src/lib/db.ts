@@ -107,6 +107,16 @@ function criarSchema(db: DatabaseSync) {
       user_id text not null references users (id) on delete cascade,
       criado_em text not null
     );
+
+    create index if not exists users_setor_idx on users (setor_id);
+    create index if not exists templates_setor_idx on checklist_templates (setor_id, codigo);
+    create index if not exists itens_template_idx on checklist_items (template_id, ordem);
+    create index if not exists checklists_setor_idx on checklists (setor_id, status, data_criacao);
+    create index if not exists respostas_checklist_idx on checklist_respostas (checklist_id);
+    create index if not exists acoes_setor_idx on acoes (setor_id, status, aberto_em);
+    create index if not exists acoes_prazo_idx on acoes (status, prazo);
+    create index if not exists acoes_reset_idx on acoes (reset_count);
+    create index if not exists sessoes_user_idx on sessoes (user_id);
   `);
 }
 

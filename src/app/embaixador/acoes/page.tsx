@@ -1,15 +1,23 @@
 import Header from "@/components/header";
 import { requirePapel } from "@/lib/auth";
-import { listarAcoesDoSetor } from "@/lib/repo";
+import Paginacao, { lerPagina } from "@/components/paginacao";
+import { indicadoresAcoes, listarAcoesDoSetor } from "@/lib/repo";
 import { ROTULO_STATUS_ACAO, type StatusAcao } from "@/types";
 import AcaoLinha from "./acao-linha";
 import { LINKS_EMBAIXADOR } from "../links";
 
 const STATUS: StatusAcao[] = ["aberta", "com_prazo", "vencida", "concluida"];
 
-export default async function AcoesDoSetorPage() {
+export default async function AcoesDoSetorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pagina?: string }>;
+}) {
   const usuario = await requirePapel(["embaixador"]);
-  const acoes = listarAcoesDoSetor(usuario.setor_id!);
+  const { pagina } = await searchParams;
+
+  const acoes = listarAcoesDoSetor(usuario.setor_id!, lerPagina(pagina));
+  const indicadores = indicadoresAcoes(usuario.setor_id);
 
   return (
     <>
@@ -30,7 +38,7 @@ export default async function AcoesDoSetorPage() {
           {STATUS.map((status) => (
             <div key={status} className="indicador">
               <p className="indicador-valor">
-                {acoes.filter((acao) => acao.status === status).length}
+                {indicadores.porStatus[status]}
               </p>
               <p className="indicador-rotulo">{ROTULO_STATUS_ACAO[status]}</p>
             </div>
@@ -50,10 +58,10 @@ export default async function AcoesDoSetorPage() {
             </tr>
           </thead>
           <tbody>
-            {acoes.map((acao) => (
+            {acoes.itens.map((acao) => (
               <AcaoLinha key={acao.id} acao={acao} />
             ))}
-            {acoes.length === 0 && (
+            {acoes.total === 0 && (
               <tr>
                 <td colSpan={6} className="vazio">
                   Nenhuma acao no setor
@@ -63,6 +71,14 @@ export default async function AcoesDoSetorPage() {
           </tbody>
         </table>
         </div>
+
+        <Paginacao
+          base="/embaixador/acoes"
+          pagina={acoes.pagina}
+          paginas={acoes.paginas}
+          total={acoes.total}
+          rotulo="ações"
+        />
       </main>
     </>
   );

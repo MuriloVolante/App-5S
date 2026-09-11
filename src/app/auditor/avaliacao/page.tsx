@@ -1,14 +1,18 @@
 import Header from "@/components/header";
-import { LINKS_AUDITOR } from "../links";
+import Paginacao, { lerPagina } from "@/components/paginacao";
 import { requirePapel } from "@/lib/auth";
 import { listarAcoesVencidas } from "@/lib/repo";
 import AcaoVencida from "./acao-vencida";
+import { LINKS_AUDITOR } from "../links";
 
-
-
-export default async function AvaliacaoPage() {
+export default async function AvaliacaoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pagina?: string }>;
+}) {
   const usuario = await requirePapel(["auditor"]);
-  const acoes = listarAcoesVencidas(usuario.setor_id!);
+  const { pagina } = await searchParams;
+  const acoes = listarAcoesVencidas(usuario.setor_id!, lerPagina(pagina));
 
   return (
     <>
@@ -22,14 +26,24 @@ export default async function AvaliacaoPage() {
           </p>
         </div>
 
-        {acoes.length === 0 ? (
+        {acoes.total === 0 ? (
           <p className="cartao-plano vazio">Nenhuma ação vencida</p>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {acoes.map((acao) => (
-              <AcaoVencida key={acao.id} acao={acao} />
-            ))}
-          </ul>
+          <>
+            <ul className="flex flex-col gap-3">
+              {acoes.itens.map((acao) => (
+                <AcaoVencida key={acao.id} acao={acao} />
+              ))}
+            </ul>
+
+            <Paginacao
+              base="/auditor/avaliacao"
+              pagina={acoes.pagina}
+              paginas={acoes.paginas}
+              total={acoes.total}
+              rotulo="ações vencidas"
+            />
+          </>
         )}
       </main>
     </>

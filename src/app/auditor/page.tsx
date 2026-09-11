@@ -1,25 +1,35 @@
 import Link from "next/link";
 import Header from "@/components/header";
+import Paginacao, { lerPagina } from "@/components/paginacao";
 import { requirePapel } from "@/lib/auth";
 import {
-  listarAcoesVencidas,
-  listarChecklistsDoSetor,
+  contarAcoesVencidas,
+  listarChecklistsPorStatus,
   obterTemplate,
 } from "@/lib/repo";
 import { ROTULO_STATUS_CHECKLIST } from "@/types";
 import { LINKS_AUDITOR } from "./links";
 
-export default async function AuditorPage() {
+export default async function AuditorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pagina?: string; finalizados?: string }>;
+}) {
   const usuario = await requirePapel(["auditor"]);
-  const checklists = listarChecklistsDoSetor(usuario.setor_id!);
-  const vencidas = listarAcoesVencidas(usuario.setor_id!).length;
+  const { pagina, finalizados: paginaFinalizados } = await searchParams;
 
-  const abertos = checklists.filter(
-    (checklist) => checklist.status === "aberto"
+  const abertos = listarChecklistsPorStatus(
+    usuario.setor_id!,
+    "aberto",
+    lerPagina(pagina)
   );
-  const finalizados = checklists.filter(
-    (checklist) => checklist.status === "finalizado"
+  const finalizados = listarChecklistsPorStatus(
+    usuario.setor_id!,
+    "finalizado",
+    lerPagina(paginaFinalizados),
+    10
   );
+  const vencidas = contarAcoesVencidas(usuario.setor_id!);
 
   return (
     <>
@@ -36,79 +46,100 @@ export default async function AuditorPage() {
 
         <section className="flex flex-col gap-3">
           <h1 className="titulo">Checklists a preencher</h1>
-          {abertos.length === 0 ? (
+          {abertos.total === 0 ? (
             <p className="nota">
               Nenhum checklist aberto no seu setor. O embaixador do setor é quem
               abre novos checklists.
             </p>
           ) : (
-            <ul className="flex flex-col gap-2">
-              {abertos.map((checklist) => {
-                const template = obterTemplate(checklist.template_id);
-                return (
-                  <li key={checklist.id}>
-                    <Link
-                      href={`/auditor/checklists/${checklist.id}`}
-                      className="cartao-plano item-linha cartao-item"
-                    >
-                      <span className="flex min-w-0 flex-col gap-1">
-                        <span className="break-words">
-                          <span className="codigo">{checklist.codigo}</span>{" "}
-                          {template?.nome}
+            <>
+              <ul className="flex flex-col gap-2">
+                {abertos.itens.map((checklist) => {
+                  const template = obterTemplate(checklist.template_id);
+                  return (
+                    <li key={checklist.id}>
+                      <Link
+                        href={`/auditor/checklists/${checklist.id}`}
+                        className="cartao-plano item-linha cartao-item"
+                      >
+                        <span className="flex min-w-0 flex-col gap-1">
+                          <span className="break-words">
+                            <span className="codigo">{checklist.codigo}</span>{" "}
+                            {template?.nome}
+                          </span>
+                          <span className="nota">
+                            aberto em{" "}
+                            {new Date(checklist.data_criacao).toLocaleString(
+                              "pt-BR"
+                            )}
+                          </span>
                         </span>
-                        <span className="nota">
-                          aberto em{" "}
-                          {new Date(checklist.data_criacao).toLocaleString(
-                            "pt-BR"
-                          )}
+                        <span className="botao botao-mini w-full sm:w-auto">
+                          Preencher
                         </span>
-                      </span>
-                      <span className="botao botao-mini w-full sm:w-auto">
-                        Preencher
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <Paginacao
+                base="/auditor"
+                pagina={abertos.pagina}
+                paginas={abertos.paginas}
+                total={abertos.total}
+                rotulo="abertos"
+              />
+            </>
           )}
         </section>
 
         <section className="flex flex-col gap-3">
           <h2 className="titulo">Finalizados</h2>
-          {finalizados.length === 0 ? (
+          {finalizados.total === 0 ? (
             <p className="nota">Nenhum checklist finalizado até agora.</p>
           ) : (
-            <ul className="flex flex-col gap-2">
-              {finalizados.map((checklist) => {
-                const template = obterTemplate(checklist.template_id);
-                return (
-                  <li key={checklist.id}>
-                    <Link
-                      href={`/auditor/checklists/${checklist.id}`}
-                      className="cartao-plano cartao-item"
-                    >
-                      <span className="flex min-w-0 flex-col gap-1">
-                        <span className="break-words">
-                          <span className="codigo">{checklist.codigo}</span>{" "}
-                          {template?.nome}
+            <>
+              <ul className="flex flex-col gap-2">
+                {finalizados.itens.map((checklist) => {
+                  const template = obterTemplate(checklist.template_id);
+                  return (
+                    <li key={checklist.id}>
+                      <Link
+                        href={`/auditor/checklists/${checklist.id}`}
+                        className="cartao-plano cartao-item"
+                      >
+                        <span className="flex min-w-0 flex-col gap-1">
+                          <span className="break-words">
+                            <span className="codigo">{checklist.codigo}</span>{" "}
+                            {template?.nome}
+                          </span>
+                          <span className="nota">
+                            {checklist.finalizado_em
+                              ? new Date(
+                                  checklist.finalizado_em
+                                ).toLocaleString("pt-BR")
+                              : ""}
+                          </span>
                         </span>
-                        <span className="nota">
-                          {checklist.finalizado_em
-                            ? new Date(
-                                checklist.finalizado_em
-                              ).toLocaleString("pt-BR")
-                            : ""}
+                        <span className={`selo selo-${checklist.status}`}>
+                          {ROTULO_STATUS_CHECKLIST[checklist.status]}
                         </span>
-                      </span>
-                      <span className={`selo selo-${checklist.status}`}>
-                        {ROTULO_STATUS_CHECKLIST[checklist.status]}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <Paginacao
+                base="/auditor"
+                pagina={finalizados.pagina}
+                paginas={finalizados.paginas}
+                total={finalizados.total}
+                rotulo="finalizados"
+                parametro="finalizados"
+              />
+            </>
           )}
         </section>
       </main>
