@@ -52,7 +52,7 @@ export type ChecklistResposta = {
   id: string;
   checklist_id: string;
   item_id: string;
-  conforme: number;
+  conforme: boolean;
   observacao: string | null;
   foto_url: string | null;
   criado_em: string;

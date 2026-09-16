@@ -19,12 +19,12 @@ export default async function TemplateItensPage({
   const { id } = await params;
   const { pagina } = await searchParams;
 
-  const template = obterTemplate(id);
+  const template = await obterTemplate(id);
   if (!template) notFound();
   if (template.setor_id !== usuario.setor_id) redirect("/embaixador/templates");
 
-  const itens = listarItensPagina(template.id, lerPagina(pagina));
-  const proximaOrdem = contarItens(template.id) + 1;
+  const itens = await listarItensPagina(template.id, lerPagina(pagina));
+  const proximaOrdem = await contarItens(template.id) + 1;
 
   return (
     <>

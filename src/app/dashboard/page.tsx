@@ -33,21 +33,21 @@ export default async function DashboardPage({
 
   const escopo = usuario.papel === "admin" ? null : usuario.setor_id;
 
-  const indicadores = indicadoresAcoes(escopo);
-  const resumo = resumoAcoesPorSetor(escopo, lerPagina(paginaSetores));
-  const medias = tempoMedioPorSetor(escopo, lerPagina(paginaMedias));
-  const vencidas = listarAcoesPorStatus(
+  const indicadores = await indicadoresAcoes(escopo);
+  const resumo = await resumoAcoesPorSetor(escopo, lerPagina(paginaSetores));
+  const medias = await tempoMedioPorSetor(escopo, lerPagina(paginaMedias));
+  const vencidas = await listarAcoesPorStatus(
     "vencida",
     escopo,
     lerPagina(paginaVencidas)
   );
-  const reincidentes = listarAcoesReincidentes(
+  const reincidentes = await listarAcoesReincidentes(
     escopo,
     lerPagina(paginaReincidentes)
   );
 
   const nomeSetor = new Map(
-    listarSetores().map((setor) => [setor.id, `${setor.codigo} · ${setor.nome}`])
+    (await listarSetores()).map((setor) => [setor.id, `${setor.codigo} · ${setor.nome}`])
   );
 
   const links =

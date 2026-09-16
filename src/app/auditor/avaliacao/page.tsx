@@ -12,9 +12,9 @@ export default async function AvaliacaoPage({
 }) {
   const usuario = await requirePapel(["auditor"]);
   const { pagina } = await searchParams;
-  const acoes = listarAcoesVencidasGlobais(lerPagina(pagina));
+  const acoes = await listarAcoesVencidasGlobais(lerPagina(pagina));
   const nomeSetor = new Map(
-    listarSetores().map((setor) => [setor.id, `${setor.codigo} · ${setor.nome}`])
+    (await listarSetores()).map((setor) => [setor.id, `${setor.codigo} · ${setor.nome}`])
   );
 
   return (

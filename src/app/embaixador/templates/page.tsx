@@ -13,7 +13,18 @@ export default async function TemplatesPage({
 }) {
   const usuario = await requirePapel(["embaixador"]);
   const { pagina } = await searchParams;
-  const templates = listarTemplatesDoSetor(usuario.setor_id!, lerPagina(pagina));
+  const templates = await listarTemplatesDoSetor(
+    usuario.setor_id!,
+    lerPagina(pagina)
+  );
+  const totalItens = new Map(
+    await Promise.all(
+      templates.itens.map(
+        async (template) =>
+          [template.id, await contarItens(template.id)] as const
+      )
+    )
+  );
 
   return (
     <>
@@ -44,7 +55,7 @@ export default async function TemplatesPage({
                 <TemplateLinha
                   key={`${template.id}:${template.nome}`}
                   template={template}
-                  totalItens={contarItens(template.id)}
+                  totalItens={totalItens.get(template.id) ?? 0}
                 />
               ))}
               {templates.total === 0 && (

@@ -20,7 +20,7 @@ export async function entrar(
   if (!email || !senha)
     return { erro: "Informe e-mail e senha.", aba: "entrar" };
 
-  const usuario = buscarUsuarioPorEmail(email);
+  const usuario = await buscarUsuarioPorEmail(email);
   if (!usuario || !conferirSenha(senha, usuario.senha_hash))
     return { erro: "E-mail ou senha inválidos.", aba: "entrar" };
 
@@ -43,8 +43,8 @@ export async function criarConta(
   if (senha.length < 6)
     return { erro: "Senha deve ter ao menos 6 caracteres.", aba: "criar" };
 
-  const primeiro = contarUsuarios() === 0;
-  const resultado = criarUsuario({
+  const primeiro = await contarUsuarios() === 0;
+  const resultado = await criarUsuario({
     nome,
     email,
     senha,

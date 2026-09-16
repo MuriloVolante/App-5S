@@ -23,12 +23,12 @@ export default async function ChecklistPage({
   const { id } = await params;
   const usuario = await requirePapel(["auditor"]);
 
-  const checklist = obterChecklist(id);
+  const checklist = await obterChecklist(id);
   if (!checklist) notFound();
 
-  const template = obterTemplate(checklist.template_id);
-  const itens = listarItens(checklist.template_id);
-  const respostas = respostasDoChecklist(checklist.id);
+  const template = await obterTemplate(checklist.template_id);
+  const itens = await listarItens(checklist.template_id);
+  const respostas = await respostasDoChecklist(checklist.id);
 
   return (
     <>

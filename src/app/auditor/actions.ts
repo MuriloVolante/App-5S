@@ -13,11 +13,11 @@ export async function abrirChecklist(
   const templateId = String(formData.get("template_id") ?? "");
   if (!templateId) return { erro: "Checklist inválido." };
 
-  const template = repo.obterTemplate(templateId);
+  const template = await repo.obterTemplate(templateId);
   if (!template) return { erro: "Checklist inválido." };
-  if (repo.contarItens(template.id) === 0)
+  if (await repo.contarItens(template.id) === 0)
     return { erro: "Checklist sem itens cadastrados pelo embaixador." };
 
-  const id = repo.criarChecklist(template.id, template.setor_id, usuario.id);
+  const id = await repo.criarChecklist(template.id, template.setor_id, usuario.id);
   redirect(`/auditor/checklists/${id}`);
 }

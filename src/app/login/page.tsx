@@ -10,7 +10,7 @@ export default async function LoginPage() {
   if (usuario)
     redirect(usuario.papel ? HOME_POR_PAPEL[usuario.papel] : "/pendente");
 
-  const vazio = contarUsuarios() === 0;
+  const vazio = await contarUsuarios() === 0;
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-6 px-4 py-10 sm:px-5">

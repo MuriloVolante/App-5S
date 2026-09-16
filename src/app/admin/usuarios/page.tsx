@@ -9,9 +9,9 @@ export default async function UsuariosPage({
   searchParams: Promise<{ pagina?: string }>;
 }) {
   const { pagina } = await searchParams;
-  const usuarios = listarUsuarios(lerPagina(pagina));
-  const setores = listarSetores();
-  const pendentes = contarUsuariosSemPapel();
+  const usuarios = await listarUsuarios(lerPagina(pagina));
+  const setores = await listarSetores();
+  const pendentes = await contarUsuariosSemPapel();
 
   return (
     <div className="flex flex-col gap-6">

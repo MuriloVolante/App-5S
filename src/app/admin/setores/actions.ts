@@ -13,7 +13,7 @@ export async function criarSetor(
   const nome = String(formData.get("nome") ?? "").trim();
   if (!nome) return { erro: "Informe o nome do setor." };
 
-  repo.criarSetor(nome);
+  await repo.criarSetor(nome);
   revalidatePath("/admin/setores");
   return { erro: null, ok: true };
 }
@@ -28,7 +28,7 @@ export async function atualizarSetor(
   if (!id) return { erro: "Setor inválido." };
   if (!nome) return { erro: "Informe o nome do setor." };
 
-  repo.atualizarSetor(id, nome);
+  await repo.atualizarSetor(id, nome);
   revalidatePath("/admin/setores");
   return { erro: null, ok: true };
 }
@@ -41,7 +41,7 @@ export async function excluirSetor(
   const id = String(formData.get("id") ?? "");
   if (!id) return { erro: "Setor inválido." };
 
-  const erro = repo.excluirSetor(id);
+  const erro = await repo.excluirSetor(id);
   if (erro) return { erro };
 
   revalidatePath("/admin/setores");

@@ -41,7 +41,7 @@ export async function criarUsuario(
   const vinculo = lerPapelSetor(formData);
   if (typeof vinculo === "string") return { erro: vinculo };
 
-  const resultado = repo.criarUsuario({ nome, email, senha, ...vinculo });
+  const resultado = await repo.criarUsuario({ nome, email, senha, ...vinculo });
   if (resultado === "E-mail já cadastrado.") return { erro: resultado };
 
   revalidatePath("/admin/usuarios");
@@ -62,7 +62,7 @@ export async function atualizarUsuario(
   const vinculo = lerPapelSetor(formData);
   if (typeof vinculo === "string") return { erro: vinculo };
 
-  repo.atualizarUsuario(id, { nome, ...vinculo });
+  await repo.atualizarUsuario(id, { nome, ...vinculo });
   revalidatePath("/admin/usuarios");
   return { erro: null, ok: true };
 }
@@ -76,7 +76,7 @@ export async function excluirUsuario(
   if (!id) return { erro: "Usuário inválido." };
   if (id === admin.id) return { erro: "Não é possível excluir a si mesmo." };
 
-  const erro = repo.excluirUsuario(id);
+  const erro = await repo.excluirUsuario(id);
   if (erro) return { erro };
 
   revalidatePath("/admin/usuarios");

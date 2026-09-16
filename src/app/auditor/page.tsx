@@ -30,20 +30,46 @@ export default async function AuditorPage({
     finalizados: paginaFinalizados,
   } = await searchParams;
 
-  const templates = listarTemplatesComSetor(lerPagina(paginaTemplates));
-  const abertos = listarChecklistsGlobaisPorStatus(
+  const templates = await listarTemplatesComSetor(lerPagina(paginaTemplates));
+  const abertos = await listarChecklistsGlobaisPorStatus(
     "aberto",
     lerPagina(paginaAbertos)
   );
-  const finalizados = listarChecklistsGlobaisPorStatus(
+  const finalizados = await listarChecklistsGlobaisPorStatus(
     "finalizado",
     lerPagina(paginaFinalizados),
     10
   );
-  const vencidas = contarAcoesVencidasGlobais();
+  const vencidas = await contarAcoesVencidasGlobais();
 
   const nomeSetor = new Map(
-    listarSetores().map((setor) => [setor.id, `${setor.codigo} · ${setor.nome}`])
+    (await listarSetores()).map((setor) => [
+      setor.id,
+      `${setor.codigo} · ${setor.nome}`,
+    ])
+  );
+
+  // uma consulta por template/contagem antes da renderizacao, nao dentro do map
+  const idsTemplates = [
+    ...new Set(
+      [...abertos.itens, ...finalizados.itens].map(
+        (checklist) => checklist.template_id
+      )
+    ),
+  ];
+  const templatesCarregados = new Map(
+    (await Promise.all(idsTemplates.map((id) => obterTemplate(id))))
+      .filter((template) => template !== undefined)
+      .map((template) => [template.id, template])
+  );
+
+  const totalItens = new Map(
+    await Promise.all(
+      templates.itens.map(
+        async (template) =>
+          [template.id, await contarItens(template.id)] as const
+      )
+    )
   );
 
   return (
@@ -64,7 +90,7 @@ export default async function AuditorPage({
             <h1 className="titulo">Auditorias em andamento</h1>
             <ul className="flex flex-col gap-2">
               {abertos.itens.map((checklist) => {
-                const template = obterTemplate(checklist.template_id);
+                const template = templatesCarregados.get(checklist.template_id);
                 return (
                   <li key={checklist.id}>
                     <Link
@@ -117,7 +143,7 @@ export default async function AuditorPage({
             <>
               <ul className="flex flex-col gap-2">
                 {templates.itens.map((template) => {
-                  const itens = contarItens(template.id);
+                  const itens = totalItens.get(template.id) ?? 0;
                   return (
                     <li key={template.id} className="cartao-plano cartao-item">
                       <span className="flex min-w-0 flex-col gap-1">
@@ -159,7 +185,7 @@ export default async function AuditorPage({
             <>
               <ul className="flex flex-col gap-2">
                 {finalizados.itens.map((checklist) => {
-                  const template = obterTemplate(checklist.template_id);
+                  const template = templatesCarregados.get(checklist.template_id);
                   return (
                     <li key={checklist.id}>
                       <Link

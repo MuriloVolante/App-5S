@@ -13,7 +13,7 @@ type Contexto =
 
 async function checklistEditavel(checklistId: string): Promise<Contexto> {
   const usuario = await requirePapel(["auditor"]);
-  const checklist = repo.obterChecklist(checklistId);
+  const checklist = await repo.obterChecklist(checklistId);
 
   if (!checklist) return { ok: false, bloqueio: "Checklist inválido." };
   if (checklist.status !== "aberto")
@@ -33,7 +33,7 @@ export async function marcarConforme(
   const contexto = await checklistEditavel(checklistId);
   if (!contexto.ok) return { erro: contexto.bloqueio };
 
-  const erro = repo.salvarResposta({
+  const erro = await repo.salvarResposta({
     checklistId,
     itemId,
     auditorId: contexto.auditorId,
@@ -64,8 +64,10 @@ export async function registrarNaoConforme(
   const contexto = await checklistEditavel(checklistId);
   if (!contexto.ok) return { erro: contexto.bloqueio };
 
-  const fotoUrl = await salvarFoto(foto, checklistId);
-  const erro = repo.salvarResposta({
+  const fotoUrl = await salvarFoto(foto);
+  if (!fotoUrl)
+    return { erro: "Não consegui guardar a foto (formato ou tamanho)." };
+  const erro = await repo.salvarResposta({
     checklistId,
     itemId,
     auditorId: contexto.auditorId,
@@ -89,7 +91,7 @@ export async function finalizar(
   const contexto = await checklistEditavel(checklistId);
   if (!contexto.ok) return { erro: contexto.bloqueio };
 
-  const erro = repo.finalizarChecklist(checklistId, contexto.auditorId);
+  const erro = await repo.finalizarChecklist(checklistId, contexto.auditorId);
   if (erro) return { erro };
 
   revalidatePath(`/auditor/checklists/${checklistId}`);

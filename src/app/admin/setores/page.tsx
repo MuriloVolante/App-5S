@@ -9,7 +9,7 @@ export default async function SetoresPage({
   searchParams: Promise<{ pagina?: string }>;
 }) {
   const { pagina } = await searchParams;
-  const setores = listarSetoresPagina(lerPagina(pagina));
+  const setores = await listarSetoresPagina(lerPagina(pagina));
 
   return (
     <div className="flex flex-col gap-6">

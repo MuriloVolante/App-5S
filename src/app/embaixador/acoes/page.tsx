@@ -16,8 +16,8 @@ export default async function AcoesDoSetorPage({
   const usuario = await requirePapel(["embaixador"]);
   const { pagina } = await searchParams;
 
-  const acoes = listarAcoesDoSetor(usuario.setor_id!, lerPagina(pagina));
-  const indicadores = indicadoresAcoes(usuario.setor_id);
+  const acoes = await listarAcoesDoSetor(usuario.setor_id!, lerPagina(pagina));
+  const indicadores = await indicadoresAcoes(usuario.setor_id);
 
   return (
     <>

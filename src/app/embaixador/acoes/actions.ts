@@ -16,7 +16,7 @@ export async function definirPrazo(
   if (!id) return { erro: "Ação inválida." };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(prazo)) return { erro: "Informe o prazo." };
 
-  const erro = repo.definirPrazo(id, prazo, usuario.setor_id!);
+  const erro = await repo.definirPrazo(id, prazo, usuario.setor_id!);
   if (erro) return { erro };
 
   revalidatePath("/embaixador/acoes");

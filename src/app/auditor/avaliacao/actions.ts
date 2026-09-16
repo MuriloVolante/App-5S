@@ -13,7 +13,7 @@ export async function concluir(
   const id = String(formData.get("id") ?? "");
   if (!id) return { erro: "Ação inválida." };
 
-  const erro = repo.concluirAcao(id, usuario);
+  const erro = await repo.concluirAcao(id, usuario);
   if (erro) return { erro };
 
   revalidatePath("/auditor/avaliacao");
@@ -28,7 +28,7 @@ export async function resetar(
   const id = String(formData.get("id") ?? "");
   if (!id) return { erro: "Ação inválida." };
 
-  const erro = repo.resetarAcao(id, usuario);
+  const erro = await repo.resetarAcao(id, usuario);
   if (erro) return { erro };
 
   revalidatePath("/auditor/avaliacao");

@@ -8,7 +8,7 @@ import type { EstadoAcao } from "@/lib/actions";
 // O embaixador so administra os templates do proprio setor.
 async function templateDoSetor(templateId: string) {
   const usuario = await requirePapel(["embaixador"]);
-  const template = repo.obterTemplate(templateId);
+  const template = await repo.obterTemplate(templateId);
 
   if (!template || template.setor_id !== usuario.setor_id) return null;
   return template;
@@ -22,7 +22,7 @@ export async function criarTemplate(
   const nome = String(formData.get("nome") ?? "").trim();
   if (!nome) return { erro: "Informe o nome do checklist." };
 
-  repo.criarTemplate(nome, usuario.setor_id!);
+  await repo.criarTemplate(nome, usuario.setor_id!);
   revalidatePath("/embaixador/templates");
   return { erro: null, ok: true };
 }
@@ -39,7 +39,7 @@ export async function atualizarTemplate(
   const template = await templateDoSetor(id);
   if (!template) return { erro: "Checklist fora do seu setor." };
 
-  repo.atualizarTemplate(id, nome, template.setor_id);
+  await repo.atualizarTemplate(id, nome, template.setor_id);
   revalidatePath("/embaixador/templates");
   return { erro: null, ok: true };
 }
@@ -54,7 +54,7 @@ export async function excluirTemplate(
   const template = await templateDoSetor(id);
   if (!template) return { erro: "Checklist fora do seu setor." };
 
-  const erro = repo.excluirTemplate(id);
+  const erro = await repo.excluirTemplate(id);
   if (erro) return { erro };
 
   revalidatePath("/embaixador/templates");
@@ -74,7 +74,7 @@ export async function criarItem(
   if (!(await templateDoSetor(templateId)))
     return { erro: "Checklist fora do seu setor." };
 
-  repo.criarItem(templateId, descricao, ordem);
+  await repo.criarItem(templateId, descricao, ordem);
   revalidatePath(`/embaixador/templates/${templateId}`);
   return { erro: null, ok: true };
 }
@@ -93,7 +93,7 @@ export async function atualizarItem(
   if (!(await templateDoSetor(templateId)))
     return { erro: "Checklist fora do seu setor." };
 
-  repo.atualizarItem(id, descricao, ordem);
+  await repo.atualizarItem(id, descricao, ordem);
   revalidatePath(`/embaixador/templates/${templateId}`);
   return { erro: null, ok: true };
 }
@@ -109,7 +109,7 @@ export async function excluirItem(
   if (!(await templateDoSetor(templateId)))
     return { erro: "Checklist fora do seu setor." };
 
-  const erro = repo.excluirItem(id);
+  const erro = await repo.excluirItem(id);
   if (erro) return { erro };
 
   revalidatePath(`/embaixador/templates/${templateId}`);

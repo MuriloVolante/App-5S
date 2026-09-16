@@ -5,18 +5,25 @@ checklist e seus itens, o auditor (externo, sem setor fixo) abre a auditoria e a
 cada item, itens não conformes viram pendências para o embaixador do setor, que define
 o prazo — e a ação vencida volta para o auditor concluir ou resetar.
 
-## Rodar (dois comandos, sem configurar nada)
+## Rodar
 
-Requisito: Node.js 22.5 ou superior (Node 24 recomendado). Nada além disso — sem banco
-para instalar, sem compilador, sem variável de ambiente.
+Requisito: Node.js 20+ e um Postgres acessível (o de produção é o Supabase).
 
 ```bash
 npm install
-npm run dev
+DATABASE_URL="postgres://usuario:senha@host:5432/banco" npm run dev
 ```
 
-Abre em http://localhost:3000. O banco (SQLite) é criado sozinho em `data/app.db` na
-primeira execução, já com dados de demonstração.
+Abre em http://localhost:3000. Na primeira execução, se as tabelas não existirem, o
+app cria o schema e insere os dados de demonstração. Em produção o schema já existe e
+o app apenas confere — o usuário do banco não precisa de privilégio de DDL.
+
+Postgres local para desenvolvimento:
+
+```bash
+docker run -d --name app5s-db -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:16
+DATABASE_URL="postgres://postgres:postgres@localhost:5432/postgres" npm run dev
+```
 
 ### Contas de demonstração (senha `123456` em todas)
 
@@ -71,10 +78,11 @@ Todas as entidades têm código sequencial legível — `SET-0001`, `USR-0001`, 
 ## Stack
 
 - Next.js 16 (App Router) + React 19 + TypeScript
-- SQLite pelo módulo nativo do Node (`node:sqlite`) — arquivo local, sem dependência nativa para compilar
-- Autenticação própria: senha com `scrypt`, sessão em cookie httpOnly
-- Fotos gravadas em `data/uploads` e servidas por `/api/fotos/...`, exibidas como
-  miniatura com ampliação em modal
+- Postgres (Supabase) via `pg`, pelo pooler em modo transação — compatível com
+  funções serverless
+- Autenticação própria: senha com `scrypt`, sessão em cookie httpOnly gravada no banco
+- Fotos guardadas na tabela `fotos` (bytea) e servidas por `/api/fotos/[id]`, exibidas
+  como miniatura com ampliação em modal
 - Telas do auditor pensadas para o celular (cartões empilhados, botões de largura total,
   câmera direto no campo de foto)
 
@@ -91,9 +99,10 @@ src/app/...        telas por papel
 
 | Variável | Efeito |
 |---|---|
-| `DATABASE_FILE` | caminho do arquivo SQLite (padrão `data/app.db`) |
-| `UPLOADS_DIR` | pasta das fotos (padrão `data/uploads`) |
+| `DATABASE_URL` | **obrigatória** — conexão Postgres (pooler do Supabase em produção) |
 | `SEM_DEMO=1` | não cria setores, usuários e templates de exemplo |
+| `SEM_SCHEMA=1` | não verifica nem cria o schema na inicialização |
+| `DB_POOL_MAX` | conexões por instância (padrão 3, adequado a serverless) |
 
 ## Volume de dados
 
@@ -115,13 +124,21 @@ servidor. O banco tem índices para os filtros usados (setor, status, prazo, tem
 A exceção proposital é a execução do checklist, que carrega todos os itens do template:
 o auditor precisa responder todos antes de finalizar.
 
+## Produção
+
+Vercel (app) + Supabase (Postgres). O app se conecta pelo pooler em modo transação
+com um papel dedicado (`app5s`), que só tem DML nas tabelas do app: sem DDL, sem
+superusuário. A API pública do Supabase (anon/authenticated) não enxerga essas
+tabelas — RLS ligado e privilégios revogados.
+
+Se o host do pooler informado no `DATABASE_URL` for do cluster errado (`aws-0` x
+`aws-1`), o app tenta o outro automaticamente na inicialização.
+
 ## Limitações
 
-- SQLite em arquivo e fotos em disco funcionam localmente e em servidor com disco
-  persistente. **Não funcionam em Vercel/serverless**, onde o disco é efêmero — lá é
-  preciso trocar por um banco gerenciado (Postgres/Supabase) e storage de objetos.
+- Fotos vão para o banco como `bytea`. Resolve o disco efêmero do serverless e mantém
+  tudo em um lugar só, mas consome a cota do Postgres — para volume alto, migrar para
+  o Supabase Storage.
 - Sessões não expiram sozinhas; o logout remove a sessão.
-- Bases anteriores são migradas na abertura: papéis renomeados, coluna
-  `checklists.lider_id` virou `criado_por` e auditores perdem o vínculo de setor.
-- No Node 22 o `node:sqlite` emite um aviso de recurso experimental no console; no Node 24
-  o módulo é estável e o aviso não aparece.
+- O schema é criado pelo app apenas quando as tabelas não existem; migrações de
+  estrutura em produção são aplicadas fora do app.
