@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import Foto from "@/components/foto";
+import { comprimirImagem } from "@/lib/imagem";
 import { ESTADO_INICIAL } from "@/lib/actions";
 import type { ChecklistItem, ChecklistResposta } from "@/types";
 import { finalizar, marcarConforme, registrarNaoConforme } from "./actions";
@@ -139,14 +140,33 @@ function ModalNaoConforme({
     registrarNaoConforme,
     ESTADO_INICIAL
   );
+  const [preparando, setPreparando] = useState(false);
+  const [, iniciar] = useTransition();
 
   useEffect(() => {
     if (state.ok) aoFechar();
   }, [state, aoFechar]);
 
+  async function enviar(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+
+    const dados = new FormData(evento.currentTarget);
+    const foto = dados.get("foto");
+
+    if (foto instanceof File && foto.size > 0) {
+      setPreparando(true);
+      dados.set("foto", await comprimirImagem(foto));
+      setPreparando(false);
+    }
+
+    iniciar(() => action(dados));
+  }
+
+  const ocupado = enviando || preparando;
+
   return (
     <div className="modal-fundo">
-      <form action={action} className="cartao w-full max-w-md p-4 sm:p-5">
+      <form onSubmit={enviar} className="cartao w-full max-w-md p-4 sm:p-5">
         <p className="subtitulo">Não conformidade</p>
         <h2 className="titulo mt-1">
           <span className="codigo">{item.codigo}</span>
@@ -190,13 +210,13 @@ function ModalNaoConforme({
           <button
             type="button"
             onClick={aoFechar}
-            disabled={enviando}
+            disabled={ocupado}
             className="botao botao-secundario"
           >
             Cancelar
           </button>
-          <button type="submit" disabled={enviando} className="botao">
-            {enviando ? "Salvando" : "Salvar"}
+          <button type="submit" disabled={ocupado} className="botao">
+            {preparando ? "Preparando foto" : enviando ? "Salvando" : "Salvar"}
           </button>
         </div>
       </form>
