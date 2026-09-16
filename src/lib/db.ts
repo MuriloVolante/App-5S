@@ -30,15 +30,32 @@ function enderecos() {
   return alternativo ? [connectionString, alternativo] : [connectionString];
 }
 
-function criarPool(connectionString: string) {
+// O pg le sslmode/ssl da propria URL e, com "require", liga a verificacao da
+// cadeia — que falha contra o pooler do Supabase ("self-signed certificate in
+// certificate chain"). Removemos o parametro e definimos o TLS aqui.
+function semSslmode(connectionString: string) {
+  try {
+    const url = new URL(connectionString);
+    url.searchParams.delete("sslmode");
+    url.searchParams.delete("ssl");
+    return url.toString();
+  } catch {
+    return connectionString;
+  }
+}
+
+function criarPool(bruta: string) {
+  const connectionString = semSslmode(bruta);
+  const local =
+    connectionString.includes("localhost") ||
+    connectionString.includes("127.0.0.1");
+
   return new Pool({
     connectionString,
     max: Number(process.env.DB_POOL_MAX ?? 3),
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 15_000,
-    ssl: connectionString.includes("localhost")
-      ? undefined
-      : { rejectUnauthorized: false },
+    ssl: local ? undefined : { rejectUnauthorized: false },
   });
 }
 
